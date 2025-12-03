@@ -105,10 +105,9 @@ const LoginPage = () => {
               raised
             />
 
-            <Divider align="center" className="custom-divider">
-              <span>o continúa con</span>
-            </Divider>
-
+            <Divider className="custom-divider" />
+            <span className="p-checkbox-label">o continúa con</span>
+            <p></p>
             <Button
               label="Crear cuenta nueva"
               icon="pi pi-user-plus"
