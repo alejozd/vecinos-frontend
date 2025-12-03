@@ -8,22 +8,26 @@ const API_URL = import.meta.env.VITE_API_URL;
  * @param {number} max - Radio de búsqueda en kilómetros (por defecto 10 km).
  * @returns {Promise<Array>} Lista de usuarios cercanos.
  */
-export const findNearbyUsers = async (token, lat, lng, max = 10) => {
-  const url = `${API_URL}/users/nearby?lat=${lat}&lng=${lng}&max=${max}`;
+export const findNearbyUsers = async (
+  token,
+  lat,
+  lng,
+  radius = 10,
+  especialidad = ""
+) => {
+  const response = await fetch(
+    `${API_URL}/users/nearby?lat=${lat}&lng=${lng}&max=${radius}&especialidad=${encodeURIComponent(
+      especialidad
+    )}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.msg || "Error al buscar vecinos cercanos.");
-  }
-
-  return res.json();
+  if (!response.ok) throw new Error("Error al buscar usuarios cercanos");
+  return response.json();
 };
 
 /**

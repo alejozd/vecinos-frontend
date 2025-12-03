@@ -13,6 +13,7 @@ import { InputNumber } from "primereact/inputnumber";
 import { Avatar } from "primereact/avatar";
 import { Badge } from "primereact/badge";
 import { Card } from "primereact/card";
+import { InputText } from "primereact/inputtext";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -35,14 +36,21 @@ const NearbyPage = () => {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchRadius, setSearchRadius] = useState(10);
+  const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
 
   const loadNearbyUsers = useCallback(
-    async (lat, lng, radius) => {
+    async (lat, lng, radius, especialidad = "") => {
       if (!token) return;
       setLoadingUsers(true);
       try {
         await updateCurrentUserLocation(token, lat, lng);
-        const users = await findNearbyUsers(token, lat, lng, radius);
+        const users = await findNearbyUsers(
+          token,
+          lat,
+          lng,
+          radius,
+          especialidad
+        );
         setNearbyUsers(users);
       } catch (err) {
         console.error(err);
@@ -53,11 +61,23 @@ const NearbyPage = () => {
     [token]
   );
 
+  const handleSearch = useCallback(() => {
+    if (geo.coords) {
+      loadNearbyUsers(
+        geo.coords.lat,
+        geo.coords.lng,
+        searchRadius,
+        filtroEspecialidad.trim()
+      );
+    }
+  }, [geo.coords, searchRadius, filtroEspecialidad, loadNearbyUsers]);
+
+  // Carga inicial automática cuando se obtiene la ubicación
   useEffect(() => {
     if (geo.coords) {
-      loadNearbyUsers(geo.coords.lat, geo.coords.lng, searchRadius);
+      handleSearch();
     }
-  }, [geo.coords, searchRadius, loadNearbyUsers]);
+  }, [geo.coords, handleSearch]);
 
   // Loading completo
   if (geo.loading || loadingUsers) {
@@ -186,6 +206,43 @@ const NearbyPage = () => {
                 className="w-32"
               />
             </div>
+            <div className="mt-5">
+              <label className="font-bold text-white text-lg block mb-3">
+                Filtrar por especialidad
+              </label>
+              <div className="p-inputgroup">
+                <InputText
+                  value={filtroEspecialidad}
+                  onChange={(e) => setFiltroEspecialidad(e.target.value)}
+                  placeholder="Ej: plomero, electricista..."
+                  className="w-full"
+                  style={{
+                    background: "rgba(255,255,255,0.15)",
+                    color: "white",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                  }}
+                  // ← Sin onKeyDown → solo cambia el texto, no busca
+                />
+                {filtroEspecialidad && (
+                  <Button
+                    icon="pi pi-times"
+                    className="p-button-outlined p-button-secondary"
+                    onClick={() => setFiltroEspecialidad("")}
+                  />
+                )}
+              </div>
+            </div>
+            <Button
+              label="Buscar Vecinos"
+              icon="pi pi-search"
+              className="w-full p-button-rounded p-button-lg"
+              style={{
+                background: "linear-gradient(to right, #8b5cf6, #ec4899)",
+                border: "none",
+              }}
+              onClick={handleSearch}
+              loading={loadingUsers}
+            />
           </Card>
 
           {/* Lista de usuarios */}
@@ -237,6 +294,19 @@ const NearbyPage = () => {
                       <p className="text-gray-200 text-base">
                         {user.descripcion || "Miembro de la comunidad vecinal"}
                       </p>
+                      {user.especialidades &&
+                        user.especialidades.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {user.especialidades.map((esp, index) => (
+                              <Badge
+                                key={index}
+                                value={esp.especialidad}
+                                severity="info"
+                                className="p-badge-lg"
+                              />
+                            ))}
+                          </div>
+                        )}
                     </div>
 
                     <div className="flex flex-column gap-3">
