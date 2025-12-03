@@ -241,7 +241,7 @@ const NearbyPage = () => {
 
                     <div className="flex flex-column gap-3">
                       <Button
-                        icon="pi pi-message"
+                        icon="pi pi-comment"
                         rounded
                         className="p-button-success p-button-outlined"
                         tooltip="Mensaje"
