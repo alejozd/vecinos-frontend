@@ -117,7 +117,7 @@ const LoginPage = () => {
             />
           </form>
 
-          <p className="text-center mt-5 text-500 text-sm">
+          <p className="text-center mt-5 text-500 text-md font-bold">
             © 2025 Acceso Vecinal. Todos los derechos reservados.
           </p>
         </Card>
