@@ -108,16 +108,28 @@ const NearbyPage = () => {
           <MapContainer
             center={[geo.coords.lat, geo.coords.lng]}
             zoom={13}
-            style={{ height: "100%", width: "100%", borderRadius: "24px" }}
+            style={{ height: "100%", width: "100%", borderRadius: "28px" }}
             scrollWheelZoom={false}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; OpenStreetMap"
             />
-            <Marker position={[geo.coords.lat, geo.coords.lng]}>
-              <Popup>Tú estás aquí</Popup>
+
+            {/* Marcador de TU ubicación con pulso */}
+            <Marker
+              position={[geo.coords.lat, geo.coords.lng]}
+              icon={L.divIcon({
+                className: "my-location",
+                html: `<div style="background:#8b5cf6;width:18px;height:18px;border-radius:50%;border:4px solid white;animation:pulse 2s infinite;box-shadow:0 0 0 0 rgba(139,92,246,0.8);"></div>`,
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+              })}
+            >
+              <Popup>¡Tú estás aquí!</Popup>
             </Marker>
+
+            {/* Marcadores de vecinos */}
             {nearbyUsers
               .filter((user) => user.lat && user.lng)
               .map((user) => (
