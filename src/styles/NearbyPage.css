@@ -185,3 +185,42 @@
   .map-container { height: 420px !important; }
   .title-gradient { font-size: 2.3rem; }
 }
+
+/* Controles y lista en columna */
+.controls-and-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Slider aún más bonito */
+.custom-slider .p-slider {
+  height: 12px !important;
+  background: rgba(255,255,255,0.25) !important;
+  border-radius: 50px;
+}
+
+.custom-slider .p-slider .p-slider-range {
+  background: linear-gradient(to right, #a78bfa, #ec4899) !important;
+}
+
+.custom-slider .p-slider .p-slider-handle {
+  width: 28px !important;
+  height: 28px !important;
+  background: white !important;
+  border: 4px solid #a78bfa !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+}
+
+/* InputNumber más claro */
+.p-inputnumber input {
+  background: rgba(255,255,255,0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  font-weight: bold;
+}
+
+/* Botones más visibles */
+.p-button-outlined {
+  width: 56px !important;
+  height: 56px !important;
+}

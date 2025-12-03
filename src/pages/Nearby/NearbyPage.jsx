@@ -86,7 +86,7 @@ const NearbyPage = () => {
 
   return (
     <div className="nearby-container">
-      {/* Header moderno */}
+      {/* Header */}
       <div className="nearby-header">
         <div>
           <h1 className="title-gradient">Vecinos Cercanos</h1>
@@ -101,35 +101,35 @@ const NearbyPage = () => {
         </div>
       </div>
 
-      {/* Mapa + Lista */}
+      {/* Contenido principal */}
       <div className="nearby-content">
-        {/* Mapa interactivo */}
+        {/* Mapa */}
         <div className="map-container">
           <MapContainer
             center={[geo.coords.lat, geo.coords.lng]}
-            zoom={13}
+            zoom={14} // Más zoom para ver mejor los marcadores
             style={{ height: "100%", width: "100%", borderRadius: "28px" }}
-            scrollWheelZoom={false}
+            scrollWheelZoom={true}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; OpenStreetMap"
             />
 
-            {/* Marcador de TU ubicación con pulso */}
+            {/* Tú (marcador con pulso violeta) */}
             <Marker
               position={[geo.coords.lat, geo.coords.lng]}
               icon={L.divIcon({
-                className: "my-location",
-                html: `<div style="background:#8b5cf6;width:18px;height:18px;border-radius:50%;border:4px solid white;animation:pulse 2s infinite;box-shadow:0 0 0 0 rgba(139,92,246,0.8);"></div>`,
-                iconSize: [26, 26],
-                iconAnchor: [13, 13],
+                className: "my-location-marker",
+                html: `<div style="background:#8b5cf6;width:20px;height:20px;border-radius:50%;border:4px solid white;animation:pulse 2s infinite;"></div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14],
               })}
             >
               <Popup>¡Tú estás aquí!</Popup>
             </Marker>
 
-            {/* Marcadores de vecinos */}
+            {/* Vecinos */}
             {nearbyUsers
               .filter((user) => user.lat && user.lng)
               .map((user) => (
@@ -137,14 +137,14 @@ const NearbyPage = () => {
                   key={user.id}
                   position={[user.lat, user.lng]}
                   icon={L.divIcon({
-                    className: "custom-marker",
-                    html: `<div style="background:#ec4899;width:14px;height:14px;border-radius:50%;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.4);"></div>`,
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10],
+                    className: "neighbor-marker",
+                    html: `<div style="background:#ec4899;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5);"></div>`,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11],
                   })}
                 >
                   <Popup>
-                    <div style={{ textAlign: "center" }}>
+                    <div style={{ textAlign: "center", fontSize: "0.95rem" }}>
                       <strong>{user.nombre}</strong>
                       <br />
                       {(user.distance_m / 1000).toFixed(1)} km
@@ -155,94 +155,109 @@ const NearbyPage = () => {
           </MapContainer>
         </div>
 
-        {/* Filtro de radio */}
-        <Card className="radius-card glass-card">
-          <div className="flex align-items-center gap-4">
-            <i className="pi pi-compass text-2xl text-primary"></i>
-            <div className="flex-1">
-              <label className="font-semibold">Radio de búsqueda</label>
-              <Slider
+        {/* Controles + Lista */}
+        <div className="controls-and-list">
+          {/* Radio de búsqueda */}
+          <Card className="radius-card glass-card mb-5">
+            <div className="flex align-items-center gap-4">
+              <i
+                className="pi pi-compass text-3xl"
+                style={{ color: "#c4b5fd" }}
+              ></i>
+              <div className="flex-1">
+                <label className="font-bold text-white text-lg block mb-3">
+                  Radio de búsqueda
+                </label>
+                <Slider
+                  value={searchRadius}
+                  onChange={(e) => setSearchRadius(e.value)}
+                  min={1}
+                  max={50}
+                  className="custom-slider"
+                />
+              </div>
+              <InputNumber
                 value={searchRadius}
-                onChange={(e) => setSearchRadius(e.value)}
+                onValueChange={(e) => setSearchRadius(e.value || 10)}
+                suffix=" km"
                 min={1}
                 max={50}
-                className="mt-3"
+                showButtons
+                className="w-32"
               />
             </div>
-            <InputNumber
-              value={searchRadius}
-              onValueChange={(e) => setSearchRadius(e.value || 10)}
-              suffix=" km"
-              min={1}
-              max={50}
-              showButtons
-              buttonLayout="horizontal"
-              decrementButtonClassName="p-button-outlined"
-              incrementButtonClassName="p-button-outlined"
-            />
-          </div>
-        </Card>
+          </Card>
 
-        {/* Lista de usuarios */}
-        {nearbyUsers.length === 0 ? (
-          <div className="empty-state">
-            <i className="pi pi-users text-6xl text-400 mb-4"></i>
-            <h3>No hay vecinos en este radio</h3>
-            <p className="text-600">
-              Aumenta el radio de búsqueda para ver más personas
-            </p>
-          </div>
-        ) : (
-          <div className="users-grid">
-            {nearbyUsers.map((user) => (
-              <Card key={user.id} className="user-card glass-card hover-lift">
-                <div className="flex gap-4">
-                  <div className="relative">
-                    <Avatar
-                      image={user.foto_url}
-                      label={!user.foto_url ? user.nombre[0] : undefined}
-                      size="xlarge"
-                      shape="circle"
-                      className="border-3 border-white shadow-4"
-                    />
-                    <Badge
-                      value={`${(user.distance_m / 1000).toFixed(1)}km`}
-                      severity="success"
-                      className="distance-badge"
-                    />
-                  </div>
+          {/* Lista de usuarios */}
+          {nearbyUsers.length === 0 ? (
+            <div className="empty-state text-center py-8">
+              <i className="pi pi-users text-8xl text-gray-500 mb-4"></i>
+              <h3 className="text-2xl font-bold text-white">
+                No hay vecinos en este radio
+              </h3>
+              <p className="text-gray-300 text-lg">
+                Aumenta el radio para ver más personas
+              </p>
+            </div>
+          ) : (
+            <div className="users-grid">
+              {nearbyUsers.map((user) => (
+                <Card
+                  key={user.id}
+                  className="user-card glass-card hover-lift mb-4"
+                >
+                  <div className="flex gap-5 items-center">
+                    <div className="relative">
+                      <Avatar
+                        image={user.foto_url}
+                        label={
+                          !user.foto_url
+                            ? user.nombre[0].toUpperCase()
+                            : undefined
+                        }
+                        size="xlarge"
+                        shape="circle"
+                        className="border-4 border-white shadow-6"
+                      />
+                      <Badge
+                        value={`${(user.distance_m / 1000).toFixed(1)} km`}
+                        severity="success"
+                        className="distance-badge"
+                      />
+                    </div>
 
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-900 mb-1">
-                      {user.nombre}
-                    </h3>
-                    <p className="text-600 text-sm mb-2">{user.email}</p>
-                    <p className="text-700 line-height-3">
-                      {user.descripcion || "Miembro de la comunidad vecinal"}
-                    </p>
-                  </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white mb-1">
+                        {user.nombre}
+                      </h3>
+                      <p className="text-gray-300 text-sm mb-2">{user.email}</p>
+                      <p className="text-gray-200 text-base">
+                        {user.descripcion || "Miembro de la comunidad vecinal"}
+                      </p>
+                    </div>
 
-                  <div className="flex flex-column justify-content-between">
-                    <Button
-                      icon="pi pi-message"
-                      rounded
-                      text
-                      className="p-button-rounded p-button-success"
-                      tooltip="Enviar mensaje"
-                    />
-                    <Button
-                      icon="pi pi-phone"
-                      rounded
-                      text
-                      className="p-button-rounded p-button-info mt-2"
-                      tooltip="Llamar"
-                    />
+                    <div className="flex flex-column gap-3">
+                      <Button
+                        icon="pi pi-message"
+                        rounded
+                        className="p-button-success p-button-outlined"
+                        tooltip="Mensaje"
+                        tooltipOptions={{ position: "left" }}
+                      />
+                      <Button
+                        icon="pi pi-phone"
+                        rounded
+                        className="p-button-info p-button-outlined"
+                        tooltip="Llamar"
+                        tooltipOptions={{ position: "left" }}
+                      />
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
