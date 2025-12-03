@@ -112,12 +112,12 @@ const LoginPage = () => {
               label="Crear cuenta nueva"
               icon="pi pi-user-plus"
               className="w-full register-btn"
-              outlined
+              // outlined
               onClick={() => navigate("/register")}
             />
           </form>
 
-          <p className="text-center mt-5 text-500 text-md font-bold">
+          <p className="text-center mt-5 text-500 text-md text-white font-bold">
             © 2025 Acceso Vecinal. Todos los derechos reservados.
           </p>
         </Card>
