@@ -1,0 +1,235 @@
+/* src/styles/LoginPage.css */
+.login-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Fondo animado con ondas suaves */
+.background-animation {
+  position: absolute;
+  inset: 0;
+  background: url('https://grainy-gradients.vercel.app/noise.svg');
+  opacity: 0.07;
+  z-index: 1;
+}
+
+.background-animation::before,
+.background-animation::after {
+  content: '';
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  border-radius: 45% 55% 60% 40% / 60% 40% 55% 45%;
+  background: rgba(255, 255, 255, 0.08);
+  animation: float 20s infinite linear;
+}
+
+.background-animation::after {
+  width: 600px;
+  height: 600px;
+  left: 70%;
+  top: -10%;
+  animation-delay: -10s;
+  background: rgba(102, 126, 234, 0.15);
+}
+
+@keyframes float {
+  0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+}
+
+/* Card con glassmorphism premium */
+.login-wrapper {
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  animation: slideUp 0.8s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header con logo circular */
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.logo-circle {
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+.logo-circle i {
+  font-size: 2.5rem;
+  color: white;
+}
+
+.login-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(to right, #fff, #e0e7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-header p {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+/* Inputs flotantes modernos */
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.p-float-label input {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 1rem 1rem 1rem 3rem;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.p-float-label input::placeholder {
+  color: transparent;
+}
+
+.p-float-label label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.p-float-label input:focus {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  outline: none;
+}
+
+.p-input-icon-left i {
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: -0.7rem;
+}
+
+/* Checkbox y link */
+.p-checkbox-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.forgot-link {
+  color: #a78bfa;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forgot-link:hover {
+  color: #c4b5fd;
+  text-decoration: underline;
+}
+
+/* Botón principal */
+.login-btn {
+  height: 56px;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899); 
+  border: none;
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
+}
+
+.login-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Botón secundario */
+.register-btn {
+  height: 56px;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-weight: 600;
+  background: transparent;
+  transition: all 0.3s;
+}
+
+.register-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #a78bfa;
+  transform: translateY(-2px);
+}
+
+/* Divisor personalizado */
+.custom-divider .p-divider-content {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  padding: 0 1rem;
+}
+
+/* Mensaje de error */
+.error-msg {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 12px;
+  color: #fca5a5;
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  .login-wrapper {
+    padding: 1rem;
+  }
+  .glass-card {
+    border-radius: 20px;
+  }
+}
