@@ -70,7 +70,7 @@ const NearbyPage = () => {
         filtroEspecialidad.trim()
       );
     }
-  }, [geo.coords, searchRadius, filtroEspecialidad, loadNearbyUsers]);
+  }, [geo.coords, loadNearbyUsers]);
 
   // Carga inicial automática cuando se obtiene la ubicación
   useEffect(() => {
