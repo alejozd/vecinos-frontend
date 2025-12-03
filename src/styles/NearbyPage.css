@@ -224,3 +224,27 @@
   width: 56px !important;
   height: 56px !important;
 }
+
+/* Badge de distancia debajo del avatar (nuevo estilo) */
+.distance-badge-below {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  padding: -0.3rem 0.8rem !important;
+  border-radius: 50px !important;
+  border: 2.5px solid white !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+  min-width: 70px;
+  text-align: center;  
+}
+
+.shadow-8 {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+}
+
+/* Opcional: hace que el badge destaque más */
+.distance-badge-below:hover {
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}

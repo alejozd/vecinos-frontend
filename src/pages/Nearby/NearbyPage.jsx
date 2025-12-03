@@ -207,22 +207,25 @@ const NearbyPage = () => {
                   className="user-card glass-card hover-lift mb-4"
                 >
                   <div className="flex gap-5 items-center">
-                    <div className="relative">
-                      <Avatar
-                        image={user.foto_url}
-                        label={
-                          !user.foto_url
-                            ? user.nombre[0].toUpperCase()
-                            : undefined
-                        }
-                        size="xlarge"
-                        shape="circle"
-                        className="border-4 border-white shadow-6"
-                      />
+                    <div className="flex flex-column align-items-center">
+                      <div className="relative">
+                        <Avatar
+                          image={user.foto_url}
+                          label={
+                            !user.foto_url
+                              ? user.nombre[0].toUpperCase()
+                              : undefined
+                          }
+                          size="xlarge"
+                          shape="circle"
+                          className="border-4 border-white shadow-8"
+                        />
+                      </div>
                       <Badge
                         value={`${(user.distance_m / 1000).toFixed(1)} km`}
+                        className="distance-badge-below mt-3"
                         severity="success"
-                        className="distance-badge"
+                        // className="mt-3"
                       />
                     </div>
 
