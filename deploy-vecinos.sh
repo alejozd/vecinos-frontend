@@ -5,7 +5,7 @@
 echo "🚀 Iniciando despliegue de Vecinos-Frontend..."
 
 # Navega a la carpeta del frontend
-cd /var/www/vecinos/vecinos-frontend || { echo "❌ ERROR: No se pudo acceder a la carpeta"; exit 1; >
+cd /var/www/vecinos/vecinos-frontend || { echo "❌ ERROR: No se pudo acceder a la carpeta"; exit 1;
 
 # Detiene ejecución si hay un error
 set -e
