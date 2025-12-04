@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useAuth } from "../../hooks/useAuth";
 import useGeolocation from "../../hooks/useGeolocation";
 import {
@@ -17,7 +23,7 @@ import { InputText } from "primereact/inputtext";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../../styles/NearbyPage.css"; // ← Tu nuevo CSS brutal
+import "../../styles/NearbyPage.css";
 
 // Fix para iconos de Leaflet en React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -37,6 +43,8 @@ const NearbyPage = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchRadius, setSearchRadius] = useState(10);
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
+  const [map, setMap] = useState(null);
+  const mapRef = useRef(null);
 
   const loadNearbyUsers = useCallback(
     async (lat, lng, radius, especialidad = "") => {
@@ -81,8 +89,55 @@ const NearbyPage = () => {
     }
   }, [geo.coords]);
 
+  // Ajustar automáticamente el mapa para mostrar todos los vecinos + tú
+  useEffect(() => {
+    if (!map || !geo.coords) return;
+
+    // Esperamos un poquito más y usamos requestAnimationFrame para máxima seguridad
+    const timer = setTimeout(() => {
+      if (!mapRef.current) return;
+
+      // ¡EL TRUCO DEFINITIVO! Forzamos recalculo del tamaño
+      mapRef.current.invalidateSize({ animate: false });
+
+      const userPoints = nearbyUsers
+        .filter(
+          (user) => user.lat && user.lng && !isNaN(user.lat) && !isNaN(user.lng)
+        )
+        .map((user) => [parseFloat(user.lat), parseFloat(user.lng)]);
+
+      // Siempre incluimos nuestra posición
+      const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
+
+      // Si no hay vecinos o todos están en el mismo punto
+      if (
+        allPoints.length === 1 ||
+        allPoints.every(
+          (p) => p[0] === allPoints[0][0] && p[1] === allPoints[0][1]
+        )
+      ) {
+        mapRef.current.setView([geo.coords.lat, geo.coords.lng], 14, {
+          animate: true,
+        });
+        return;
+      }
+
+      const bounds = L.latLngBounds(allPoints);
+
+      // fitBounds con opciones más agresivas y animación
+      mapRef.current.fitBounds(bounds, {
+        padding: [100, 100], // Más padding para que quede bonito
+        maxZoom: 15,
+        animate: true,
+        duration: 1.2, // Animación de 1.2 segundos (se nota mucho más)
+      });
+    }, 300); // Subimos a 300ms → da tiempo suficiente a que los marcadores se rendericen
+
+    return () => clearTimeout(timer);
+  }, [nearbyUsers, geo.coords, map]);
+
   // Loading completo
-  if (geo.loading || loadingUsers) {
+  if (geo.loading) {
     return (
       <div className="nearby-container">
         <div className="skeleton-header" />
@@ -108,6 +163,12 @@ const NearbyPage = () => {
 
   return (
     <div className="nearby-container">
+      {/* Overlay loader solo cuando estamos buscando usuarios */}
+      {loadingUsers && (
+        <div className="loading-overlay">
+          <ProgressSpinner />
+        </div>
+      )}
       {/* Header */}
       <div className="nearby-header">
         <div>
@@ -128,10 +189,15 @@ const NearbyPage = () => {
         {/* Mapa */}
         <div className="map-container">
           <MapContainer
+            key="mapa-fijo"
             center={[geo.coords.lat, geo.coords.lng]}
             zoom={14} // Más zoom para ver mejor los marcadores
             style={{ height: "100%", width: "100%", borderRadius: "28px" }}
             scrollWheelZoom={true}
+            whenCreated={(mapInstance) => {
+              setMap(mapInstance);
+              mapRef.current = mapInstance;
+            }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

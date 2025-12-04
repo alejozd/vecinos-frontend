@@ -5,6 +5,7 @@
   padding: 2rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: white;
+  position: relative;
 }
 
 /* Header */
@@ -247,4 +248,30 @@
 .distance-badge-below:hover {
   transform: scale(1.1);
   transition: all 0.3s ease;
+}
+
+.overlay-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: rgba(0,0,0,0.5);
+  padding: 20px;
+  border-radius: 50%;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 28px; /* opcional: para que coincida con el mapa */
+  /* backdrop-filter: blur(3px);   */
 }
