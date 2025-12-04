@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
     const loadProfile = async () => {
       if (token) {
         try {
-          const res = await fetch(`${API_URL}/users/me`, {
+          const res = await fetch(`${API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 

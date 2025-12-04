@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL;
  * Llama a la API para registrar un nuevo usuario.
  */
 export const registerUser = async (nombre, email, password) => {
-  const res = await fetch(`${API_URL}/auth/register`, {
+  const res = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ nombre, email, password }),
@@ -24,7 +24,7 @@ export const registerUser = async (nombre, email, password) => {
  * Llama a la API para iniciar sesión (Movido de AuthContext)
  */
 export const loginUser = async (email, password) => {
-  const res = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
