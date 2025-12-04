@@ -1,4 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3400";
+const API = `${API_URL}/api`;
 
 /**
  * Llama al backend para obtener la lista de usuarios (proveedores) cercanos.
@@ -12,22 +13,27 @@ export const findNearbyUsers = async (
   token,
   lat,
   lng,
-  radius = 10,
+  radius,
   especialidad = ""
 ) => {
-  const response = await fetch(
-    `${API_URL}/api/users/nearby?lat=${lat}&lng=${lng}&max=${radius}&especialidad=${encodeURIComponent(
-      especialidad
-    )}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  let url = `${API}/users/nearby?lat=${lat}&lng=${lng}&radius=${radius}`;
 
-  if (!response.ok) throw new Error("Error al buscar usuarios cercanos");
-  return response.json();
+  // Solo añadir el parámetro si hay texto real
+  if (especialidad && especialidad.trim() !== "") {
+    url += `&especialidad=${encodeURIComponent(especialidad.trim())}`;
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}`);
+  }
+
+  return await response.json();
 };
 
 /**

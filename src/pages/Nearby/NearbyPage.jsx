@@ -44,16 +44,17 @@ const NearbyPage = () => {
       setLoadingUsers(true);
       try {
         await updateCurrentUserLocation(token, lat, lng);
+
         const users = await findNearbyUsers(
           token,
           lat,
           lng,
           radius,
-          especialidad
+          especialidad || undefined // ← importante: undefined o cadena vacía si no hay filtro
         );
         setNearbyUsers(users);
       } catch (err) {
-        console.error(err);
+        console.error("Error cargando vecinos:", err);
       } finally {
         setLoadingUsers(false);
       }
@@ -63,21 +64,22 @@ const NearbyPage = () => {
 
   const handleSearch = useCallback(() => {
     if (geo.coords) {
+      const especialidadLimpia = filtroEspecialidad.trim();
       loadNearbyUsers(
         geo.coords.lat,
         geo.coords.lng,
         searchRadius,
-        filtroEspecialidad.trim()
+        especialidadLimpia === "" ? "" : especialidadLimpia // ← envía "" solo si está vacío
       );
     }
-  }, [geo.coords, loadNearbyUsers]);
+  }, [geo.coords, searchRadius, filtroEspecialidad, loadNearbyUsers]);
 
   // Carga inicial automática cuando se obtiene la ubicación
   useEffect(() => {
-    if (geo.coords) {
-      handleSearch();
+    if (geo.coords && nearbyUsers.length === 0) {
+      handleSearch(); // Solo la primera vez
     }
-  }, [geo.coords, handleSearch]);
+  }, [geo.coords]);
 
   // Loading completo
   if (geo.loading || loadingUsers) {
@@ -151,11 +153,14 @@ const NearbyPage = () => {
 
             {/* Vecinos */}
             {nearbyUsers
-              .filter((user) => user.lat && user.lng)
+              .filter(
+                (user) =>
+                  user.lat && user.lng && !isNaN(user.lat) && !isNaN(user.lng)
+              )
               .map((user) => (
                 <Marker
                   key={user.id}
-                  position={[user.lat, user.lng]}
+                  position={[parseFloat(user.lat), parseFloat(user.lng)]}
                   icon={L.divIcon({
                     className: "neighbor-marker",
                     html: `<div style="background:#ec4899;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5);"></div>`,
@@ -214,6 +219,11 @@ const NearbyPage = () => {
                 <InputText
                   value={filtroEspecialidad}
                   onChange={(e) => setFiltroEspecialidad(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                   placeholder="Ej: plomero, electricista..."
                   className="w-full"
                   style={{
@@ -240,7 +250,11 @@ const NearbyPage = () => {
                     background: "linear-gradient(to right, #8b5cf6, #ec4899)",
                     border: "none",
                   }}
-                  onClick={handleSearch}
+                  // onClick={handleSearch}
+                  onClick={(e) => {
+                    e.preventDefault(); // ← Esto evita cualquier comportamiento por defecto
+                    handleSearch();
+                  }}
                   loading={loadingUsers}
                 />
               </div>
