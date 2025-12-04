@@ -45,6 +45,7 @@ const NearbyPage = () => {
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
   const [map, setMap] = useState(null);
   const mapRef = useRef(null);
+  const [usersVersion, setUsersVersion] = useState(0);
 
   const loadNearbyUsers = useCallback(
     async (lat, lng, radius, especialidad = "") => {
@@ -61,6 +62,7 @@ const NearbyPage = () => {
           especialidad || undefined // ← importante: undefined o cadena vacía si no hay filtro
         );
         setNearbyUsers(users);
+        setUsersVersion((prev) => prev + 1);
       } catch (err) {
         console.error("Error cargando vecinos:", err);
       } finally {
@@ -93,12 +95,12 @@ const NearbyPage = () => {
   useEffect(() => {
     if (!map || !geo.coords) return;
 
-    // Esperamos un poquito más y usamos requestAnimationFrame para máxima seguridad
+    console.log("useEffect del mapa se ejecutó - Versión:", usersVersion);
+
     const timer = setTimeout(() => {
       if (!mapRef.current) return;
 
-      // ¡EL TRUCO DEFINITIVO! Forzamos recalculo del tamaño
-      mapRef.current.invalidateSize({ animate: false });
+      mapRef.current.invalidateSize();
 
       const userPoints = nearbyUsers
         .filter(
@@ -106,14 +108,17 @@ const NearbyPage = () => {
         )
         .map((user) => [parseFloat(user.lat), parseFloat(user.lng)]);
 
-      // Siempre incluimos nuestra posición
       const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
 
-      // Si no hay vecinos o todos están en el mismo punto
+      console.log("AJUSTANDO MAPA - Total puntos:", allPoints.length);
+
+      // Si no hay vecinos o todos en el mismo punto
       if (
-        allPoints.length === 1 ||
+        allPoints.length <= 1 ||
         allPoints.every(
-          (p) => p[0] === allPoints[0][0] && p[1] === allPoints[0][1]
+          (p) =>
+            Math.abs(p[0] - allPoints[0][0]) < 0.0001 &&
+            Math.abs(p[1] - allPoints[0][1]) < 0.0001
         )
       ) {
         mapRef.current.setView([geo.coords.lat, geo.coords.lng], 14, {
@@ -122,19 +127,19 @@ const NearbyPage = () => {
         return;
       }
 
+      // Calculamos bounds directamente (más simple y fiable)
       const bounds = L.latLngBounds(allPoints);
 
-      // fitBounds con opciones más agresivas y animación
       mapRef.current.fitBounds(bounds, {
-        padding: [100, 100], // Más padding para que quede bonito
+        padding: [100, 100],
         maxZoom: 15,
         animate: true,
-        duration: 1.2, // Animación de 1.2 segundos (se nota mucho más)
+        duration: 1.2,
       });
-    }, 300); // Subimos a 300ms → da tiempo suficiente a que los marcadores se rendericen
+    }, 500); // 500ms para dar tiempo a que los marcadores se rendericen
 
     return () => clearTimeout(timer);
-  }, [nearbyUsers, geo.coords, map]);
+  }, [usersVersion]);
 
   // Loading completo
   if (geo.loading) {
