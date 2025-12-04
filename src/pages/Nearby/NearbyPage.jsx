@@ -269,12 +269,8 @@ const NearbyPage = () => {
                     <div className="flex flex-column align-items-center">
                       <div className="relative">
                         <Avatar
-                          image={user.foto_url}
-                          label={
-                            !user.foto_url
-                              ? user.nombre[0].toUpperCase()
-                              : undefined
-                          }
+                          image={user.foto_url || null}
+                          label={user.nombre[0].toUpperCase()}
                           size="xlarge"
                           shape="circle"
                           className="border-4 border-white shadow-8"
