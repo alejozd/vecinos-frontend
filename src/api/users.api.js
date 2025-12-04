@@ -16,7 +16,7 @@ export const findNearbyUsers = async (
   especialidad = ""
 ) => {
   const response = await fetch(
-    `${API_URL}/users/nearby?lat=${lat}&lng=${lng}&max=${radius}&especialidad=${encodeURIComponent(
+    `${API_URL}/api/users/nearby?lat=${lat}&lng=${lng}&max=${radius}&especialidad=${encodeURIComponent(
       especialidad
     )}`,
     {
@@ -38,7 +38,7 @@ export const findNearbyUsers = async (
  * @returns {Promise<void>}
  */
 export const updateCurrentUserLocation = async (token, lat, lng) => {
-  const url = `${API_URL}/users/location`;
+  const url = `${API_URL}/api/users/location`;
 
   const res = await fetch(url, {
     method: "PUT",
