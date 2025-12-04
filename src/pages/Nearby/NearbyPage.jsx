@@ -43,7 +43,6 @@ const NearbyPage = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchRadius, setSearchRadius] = useState(10);
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
-  const [map, setMap] = useState(null);
   const mapRef = useRef(null);
   const [usersVersion, setUsersVersion] = useState(0);
 
@@ -72,6 +71,41 @@ const NearbyPage = () => {
     [token]
   );
 
+  const adjustMapBounds = useCallback(() => {
+    if (!mapRef.current || !geo.coords) return;
+
+    mapRef.current.invalidateSize();
+
+    const userPoints = nearbyUsers
+      .filter(
+        (user) => user.lat && user.lng && !isNaN(user.lat) && !isNaN(user.lng)
+      )
+      .map((user) => [parseFloat(user.lat), parseFloat(user.lng)]);
+
+    const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
+
+    if (
+      allPoints.length <= 1 ||
+      allPoints.every(
+        (p) =>
+          Math.abs(p[0] - allPoints[0][0]) < 0.0001 &&
+          Math.abs(p[1] - allPoints[0][1]) < 0.0001
+      )
+    ) {
+      mapRef.current.setView([geo.coords.lat, geo.coords.lng], 14, {
+        animate: true,
+      });
+    } else {
+      const bounds = L.latLngBounds(allPoints);
+      mapRef.current.fitBounds(bounds, {
+        padding: [100, 100],
+        maxZoom: 15,
+        animate: true,
+        duration: 1.2,
+      });
+    }
+  }, [geo.coords, nearbyUsers]);
+
   const handleSearch = useCallback(() => {
     if (geo.coords) {
       const especialidadLimpia = filtroEspecialidad.trim();
@@ -93,53 +127,21 @@ const NearbyPage = () => {
 
   // Ajustar automáticamente el mapa para mostrar todos los vecinos + tú
   useEffect(() => {
-    if (!map || !geo.coords) return;
+    if (!mapRef.current || !geo.coords) return;
 
-    console.log("useEffect del mapa se ejecutó - Versión:", usersVersion);
+    console.log(
+      "→ Ajustando mapa - usersVersion:",
+      usersVersion,
+      "| usuarios:",
+      nearbyUsers.length
+    );
 
     const timer = setTimeout(() => {
-      if (!mapRef.current) return;
-
-      mapRef.current.invalidateSize();
-
-      const userPoints = nearbyUsers
-        .filter(
-          (user) => user.lat && user.lng && !isNaN(user.lat) && !isNaN(user.lng)
-        )
-        .map((user) => [parseFloat(user.lat), parseFloat(user.lng)]);
-
-      const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
-
-      console.log("AJUSTANDO MAPA - Total puntos:", allPoints.length);
-
-      // Si no hay vecinos o todos en el mismo punto
-      if (
-        allPoints.length <= 1 ||
-        allPoints.every(
-          (p) =>
-            Math.abs(p[0] - allPoints[0][0]) < 0.0001 &&
-            Math.abs(p[1] - allPoints[0][1]) < 0.0001
-        )
-      ) {
-        mapRef.current.setView([geo.coords.lat, geo.coords.lng], 14, {
-          animate: true,
-        });
-        return;
-      }
-
-      // Calculamos bounds directamente (más simple y fiable)
-      const bounds = L.latLngBounds(allPoints);
-
-      mapRef.current.fitBounds(bounds, {
-        padding: [100, 100],
-        maxZoom: 15,
-        animate: true,
-        duration: 1.2,
-      });
-    }, 500); // 500ms para dar tiempo a que los marcadores se rendericen
+      adjustMapBounds();
+    }, 600); // Un poquito más para dar tiempo a que se rendericen los marcadores
 
     return () => clearTimeout(timer);
-  }, [usersVersion]);
+  }, [usersVersion, geo.coords, adjustMapBounds]);
 
   // Loading completo
   if (geo.loading) {
@@ -194,14 +196,19 @@ const NearbyPage = () => {
         {/* Mapa */}
         <div className="map-container">
           <MapContainer
-            key="mapa-fijo"
             center={[geo.coords.lat, geo.coords.lng]}
             zoom={14} // Más zoom para ver mejor los marcadores
             style={{ height: "100%", width: "100%", borderRadius: "28px" }}
             scrollWheelZoom={true}
             whenCreated={(mapInstance) => {
-              setMap(mapInstance);
               mapRef.current = mapInstance;
+
+              // Ajuste inicial cuando el mapa está listo (si ya tienes usuarios)
+              setTimeout(() => {
+                if (!mapRef.current) return;
+                mapRef.current.invalidateSize();
+                adjustMapBounds(); // Siempre lo llamamos, aunque solo haya tu posición
+              }, 400);
             }}
           >
             <TileLayer
