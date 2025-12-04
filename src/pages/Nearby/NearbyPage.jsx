@@ -231,18 +231,20 @@ const NearbyPage = () => {
                   />
                 )}
               </div>
+              <div className="mt-3">
+                <Button
+                  label="Buscar Vecinos"
+                  icon="pi pi-search"
+                  className="w-full p-button-rounded p-button-lg"
+                  style={{
+                    background: "linear-gradient(to right, #8b5cf6, #ec4899)",
+                    border: "none",
+                  }}
+                  onClick={handleSearch}
+                  loading={loadingUsers}
+                />
+              </div>
             </div>
-            <Button
-              label="Buscar Vecinos"
-              icon="pi pi-search"
-              className="w-full p-button-rounded p-button-lg"
-              style={{
-                background: "linear-gradient(to right, #8b5cf6, #ec4899)",
-                border: "none",
-              }}
-              onClick={handleSearch}
-              loading={loadingUsers}
-            />
           </Card>
 
           {/* Lista de usuarios */}
