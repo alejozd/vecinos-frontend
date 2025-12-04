@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3400";
 
 /**
  * Llama al backend para obtener la lista de usuarios (proveedores) cercanos.
