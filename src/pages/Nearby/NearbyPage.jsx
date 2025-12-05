@@ -164,6 +164,11 @@ const NearbyPage = () => {
     }, 300);
   }, [nearbyUsers, geo.coords]);
 
+  useEffect(() => {
+    if (!geo.coords) return;
+    handleSearch();
+  }, [geo.coords]);
+
   // Loading ubicación
   if (geo.loading) {
     return (
