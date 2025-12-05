@@ -21,18 +21,20 @@ import { Avatar } from "primereact/avatar";
 import { Badge } from "primereact/badge";
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
+
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
 import "../../styles/NearbyPage.css";
 
-// Fix para iconos de Leaflet en React
+// Fix para iconos de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png  ",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png  ",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png  ",
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
 const NearbyPage = () => {
@@ -45,7 +47,6 @@ const NearbyPage = () => {
   const [searchRadius, setSearchRadius] = useState(10);
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
   const mapRef = useRef(null);
-  const [usersVersion, setUsersVersion] = useState(0);
 
   const loadNearbyUsers = useCallback(
     async (lat, lng, radius, especialidad = "") => {
@@ -61,8 +62,14 @@ const NearbyPage = () => {
           radius,
           especialidad || undefined
         );
-        setNearbyUsers(users);
-        setUsersVersion((prev) => prev + 1);
+
+        setNearbyUsers(
+          users.map((u) => ({
+            ...u,
+            lat: u.lat ? parseFloat(u.lat) : null,
+            lng: u.lng ? parseFloat(u.lng) : null,
+          }))
+        );
       } catch (err) {
         console.error("Error cargando vecinos:", err);
       } finally {
@@ -74,8 +81,6 @@ const NearbyPage = () => {
 
   const adjustMapBounds = useCallback(() => {
     if (!mapRef.current || !geo.coords) return;
-
-    mapRef.current.invalidateSize();
 
     const userPoints = nearbyUsers
       .filter(
@@ -107,37 +112,59 @@ const NearbyPage = () => {
     }
   }, [geo.coords, nearbyUsers]);
 
-  const handleSearch = useCallback(() => {
-    if (geo.coords) {
-      const especialidadLimpia = filtroEspecialidad.trim();
-      loadNearbyUsers(
-        geo.coords.lat,
-        geo.coords.lng,
-        searchRadius,
-        especialidadLimpia === "" ? "" : especialidadLimpia
-      );
-    }
-  }, [geo.coords, searchRadius, filtroEspecialidad, loadNearbyUsers]);
+  const handleSearch = useCallback(async () => {
+    if (!geo.coords) return;
 
-  // Carga inicial automática cuando se obtiene la ubicación
+    const especialidadLimpia = filtroEspecialidad.trim();
+
+    await loadNearbyUsers(
+      geo.coords.lat,
+      geo.coords.lng,
+      searchRadius,
+      especialidadLimpia === "" ? "" : especialidadLimpia
+    );
+
+    setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+        adjustMapBounds();
+      }
+    }, 300);
+  }, [
+    geo.coords,
+    searchRadius,
+    filtroEspecialidad,
+    loadNearbyUsers,
+    adjustMapBounds,
+  ]);
+
   useEffect(() => {
-    if (geo.coords && nearbyUsers.length === 0) {
-      handleSearch(); // Solo la primera vez
-    }
-  }, [geo.coords]);
+    if (!mapRef.current) return;
+    if (!geo.coords) return;
+    if (nearbyUsers.length === 0) return;
 
-  // Ajustar automáticamente el mapa para mostrar todos los vecinos + tú
-  useEffect(() => {
-    if (!mapRef.current || !geo.coords) return;
+    // Asegura que el mapa está renderizado
+    setTimeout(() => {
+      mapRef.current.invalidateSize();
 
-    const timer = setTimeout(() => {
-      adjustMapBounds();
-    }, 600);
+      const userPoints = nearbyUsers
+        .filter((u) => u.lat && u.lng && !isNaN(parseFloat(u.lat)))
+        .map((u) => [parseFloat(u.lat), parseFloat(u.lng)]);
 
-    return () => clearTimeout(timer);
-  }, [usersVersion, geo.coords, adjustMapBounds]);
+      const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
 
-  // Loading completo
+      const bounds = L.latLngBounds(allPoints);
+
+      mapRef.current.fitBounds(bounds, {
+        padding: [100, 100],
+        maxZoom: 15,
+        animate: true,
+        duration: 1.2,
+      });
+    }, 300);
+  }, [nearbyUsers, geo.coords]);
+
+  // Loading ubicación
   if (geo.loading) {
     return (
       <div className="nearby-container">
@@ -154,6 +181,7 @@ const NearbyPage = () => {
     );
   }
 
+  // Error GPS
   if (geo.error) {
     return (
       <div className="nearby-container p-6">
@@ -164,30 +192,31 @@ const NearbyPage = () => {
 
   return (
     <div className="nearby-container px-4 py-6 md:px-6 lg:px-8">
-      {/* Overlay loader solo cuando estamos buscando usuarios */}
       {loadingUsers && (
         <div className="loading-overlay">
           <ProgressSpinner />
         </div>
       )}
+
       {/* Header */}
       <div className="nearby-header">
         <div>
           <h1 className="title-gradient">Vecinos Cercanos</h1>
           <p className="subtitle">
-            {nearbyUsers.length} persona{nearbyUsers.length !== 1 ? "s" : ""}{" "}
-            cerca de ti
+            {nearbyUsers.length} persona
+            {nearbyUsers.length !== 1 ? "s" : ""} cerca de ti
           </p>
         </div>
+
         <div className="location-badge">
           <i className="pi pi-map-marker"></i>
           <span>{searchRadius} km alrededor</span>
         </div>
       </div>
 
-      {/* Contenido principal */}
+      {/* Contenido */}
       <div className="nearby-content max-w-screen-xl mx-auto">
-        {/* Mapa */}
+        {/* MAPA */}
         <div className="map-container w-full">
           <MapContainer
             center={[geo.coords.lat, geo.coords.lng]}
@@ -196,20 +225,16 @@ const NearbyPage = () => {
             scrollWheelZoom={true}
             whenCreated={(mapInstance) => {
               mapRef.current = mapInstance;
-
+              setTimeout(() => mapRef.current.invalidateSize(true), 200);
               setTimeout(() => {
                 if (!mapRef.current) return;
-                mapRef.current.invalidateSize();
                 adjustMapBounds();
-              }, 400);
+              }, 600);
             }}
           >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; OpenStreetMap"
-            />
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-            {/* Tú (marcador con pulso violeta) */}
+            {/* Tú */}
             <Marker
               position={[geo.coords.lat, geo.coords.lng]}
               icon={L.divIcon({
@@ -251,9 +276,8 @@ const NearbyPage = () => {
           </MapContainer>
         </div>
 
-        {/* Controles + Lista */}
+        {/* Controles + lista */}
         <div className="controls-and-list w-full">
-          {/* Radio de búsqueda */}
           <Card className="radius-card glass-card mb-5">
             <div className="flex align-items-center gap-4">
               <i
@@ -282,6 +306,7 @@ const NearbyPage = () => {
                 className="w-32"
               />
             </div>
+
             <div className="mt-5">
               <label className="font-bold text-white text-lg block mb-3">
                 Filtrar por especialidad
@@ -311,6 +336,7 @@ const NearbyPage = () => {
                   />
                 )}
               </div>
+
               <div className="mt-3">
                 <Button
                   label="Buscar Vecinos"
@@ -330,7 +356,7 @@ const NearbyPage = () => {
             </div>
           </Card>
 
-          {/* Lista de usuarios */}
+          {/* LISTA DE USUARIOS */}
           {nearbyUsers.length === 0 ? (
             <div className="empty-state text-center py-8">
               <i className="pi pi-users text-8xl text-gray-500 mb-4"></i>
@@ -349,7 +375,7 @@ const NearbyPage = () => {
                   className="user-card glass-card hover-lift mb-4 overflow-hidden"
                 >
                   <div className="flex gap-4 p-2">
-                    {/* Avatar + distancia (columna izquierda) */}
+                    {/* Avatar */}
                     <div className="flex flex-column items-center flex-shrink-0">
                       <Avatar
                         image={user.foto_url || null}
@@ -365,7 +391,7 @@ const NearbyPage = () => {
                       />
                     </div>
 
-                    {/* Información del usuario (centro) */}
+                    {/* Información */}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-bold text-white mb-1 truncate">
                         {user.nombre}
@@ -377,7 +403,6 @@ const NearbyPage = () => {
                         {user.descripcion || "Miembro de la comunidad vecinal"}
                       </p>
 
-                      {/* Especialidades */}
                       {user.especialidades &&
                         user.especialidades.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
@@ -393,7 +418,7 @@ const NearbyPage = () => {
                         )}
                     </div>
 
-                    {/* Botones (derecha) */}
+                    {/* Botones */}
                     <div className="flex flex-column gap-3 justify-center">
                       <Button
                         icon="pi pi-comment"

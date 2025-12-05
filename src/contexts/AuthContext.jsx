@@ -50,29 +50,32 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const loadProfile = async () => {
-      if (token) {
-        try {
-          const res = await fetch(`${API_URL}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
 
-          if (res.ok) {
-            const profile = await res.json();
-            setUser(profile);
-          } else {
-            // Token expirado o inválido
-            logout();
-          }
-        } catch (error) {
-          console.error("Error cargando perfil:", error);
+      try {
+        const res = await fetch(`${API_URL}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const profile = await res.json();
+          setUser(profile);
+        } else {
           logout();
         }
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+        logout();
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     loadProfile();
-  }, []);
+  }, [token]);
 
   return (
     <AuthContext.Provider
