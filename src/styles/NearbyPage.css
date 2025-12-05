@@ -150,3 +150,8 @@
   height: 70px;
   font-size: 1.8rem;
 }
+
+.p-chip-info {
+  background: #9f7aea !important;
+  color: white !important;
+}

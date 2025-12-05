@@ -13,9 +13,10 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Avatar } from "primereact/avatar";
+import { Chip } from "primereact/chip";
 import "../../styles/NearbyPage.css";
 
-// === ICONOS QUE SÍ FUNCIONAN (usa estos mientras creas los tuyos) ===
+// Iconos bonitos y confiables
 const userIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
@@ -38,7 +39,6 @@ const providerIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-// Controlador del mapa
 const MapController = ({ points }) => {
   const map = useMap();
   useEffect(() => {
@@ -51,7 +51,6 @@ const MapController = ({ points }) => {
 
 export default function NearbyPage() {
   const { token } = useAuth();
-
   const [geo, setGeo] = useState({ loaded: false, coords: { lat: 0, lng: 0 } });
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const [radius, setRadius] = useState(10);
@@ -82,7 +81,17 @@ export default function NearbyPage() {
         radius,
         especialidad || undefined
       );
-      setNearbyUsers(users || []);
+
+      // Procesamos los datos para que sean más fáciles de usar
+      const processedUsers = (users || []).map((u) => ({
+        ...u,
+        lat: parseFloat(u.lat),
+        lng: parseFloat(u.lng),
+        distanceKm: u.distance_m ? (u.distance_m / 1000).toFixed(2) : "0.0",
+        especialidadesList: u.especialidades?.map((e) => e.especialidad) || [],
+      }));
+
+      setNearbyUsers(processedUsers);
     } catch (err) {
       console.error(err);
     } finally {
@@ -97,7 +106,9 @@ export default function NearbyPage() {
   const points = useMemo(
     () => [
       [geo.coords.lat, geo.coords.lng],
-      ...nearbyUsers.filter((u) => u.lat && u.lng).map((u) => [u.lat, u.lng]),
+      ...nearbyUsers
+        .filter((u) => !isNaN(u.lat) && !isNaN(u.lng))
+        .map((u) => [u.lat, u.lng]),
     ],
     [geo.coords, nearbyUsers]
   );
@@ -159,7 +170,7 @@ export default function NearbyPage() {
             />
             <MapController points={points} />
 
-            {/* Tú */}
+            {/* Tu ubicación */}
             <Marker position={[geo.coords.lat, geo.coords.lng]} icon={userIcon}>
               <Popup>
                 <strong>Tú estás aquí</strong>
@@ -168,17 +179,15 @@ export default function NearbyPage() {
 
             {/* Profesionales */}
             {nearbyUsers.map((u) => (
-              <Marker key={u._id} position={[u.lat, u.lng]} icon={providerIcon}>
+              <Marker key={u.id} position={[u.lat, u.lng]} icon={providerIcon}>
                 <Popup>
-                  <div style={{ textAlign: "center", fontSize: "14px" }}>
-                    <strong style={{ fontSize: "16px" }}>
-                      {u.nombre || "Sin nombre"}
-                    </strong>
+                  <div style={{ textAlign: "center", minWidth: 150 }}>
+                    <strong style={{ fontSize: "16px" }}>{u.nombre}</strong>
                     <br />
-                    {u.especialidad || "Profesional"}
+                    <small>{u.especialidadesList.join(", ")}</small>
                     <br />
                     <strong style={{ color: "#9f7aea" }}>
-                      {(u.distance || 0).toFixed(1)} km
+                      {u.distanceKm} km
                     </strong>
                   </div>
                 </Popup>
@@ -188,6 +197,7 @@ export default function NearbyPage() {
         </div>
       )}
 
+      {/* Lista de profesionales */}
       <div className="users-list">
         {nearbyUsers.length === 0 && !loading && (
           <p className="no-results">
@@ -196,21 +206,40 @@ export default function NearbyPage() {
         )}
 
         {nearbyUsers.map((u) => (
-          <Card key={u._id} className="user-card">
+          <Card key={u.id} className="user-card">
             <div className="user-card-content">
               <Avatar
-                image={u.foto_url}
-                label={(u.nombre || "?")[0].toUpperCase()}
+                image={u.foto_url || undefined}
+                label={u.nombre?.[0]?.toUpperCase() || "?"}
                 size="xlarge"
                 shape="circle"
                 className="user-avatar"
               />
               <div className="user-info">
-                <h3>{u.nombre || "Anónimo"}</h3>
-                <p className="specialty">{u.especialidad || "Profesional"}</p>
+                <h3>{u.nombre}</h3>
+
+                {/* Especialidades como chips */}
+                <div
+                  style={{
+                    margin: "8px 0",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "6px",
+                  }}
+                >
+                  {u.especialidadesList.map((esp, i) => (
+                    <Chip
+                      key={i}
+                      label={esp}
+                      className="p-chip-info"
+                      style={{ fontSize: "0.85rem" }}
+                    />
+                  ))}
+                </div>
+
                 <div className="distance">
-                  <i className="pi pi-map-marker" />
-                  <span>{(u.distance || 0).toFixed(1)} km</span>
+                  <i className="pi pi-map-marker" style={{ marginRight: 8 }} />
+                  <strong>{u.distanceKm} km</strong>
                 </div>
               </div>
             </div>
