@@ -17,7 +17,6 @@
 .filters-card {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 20px;
@@ -38,10 +37,6 @@
   }
 }
 
-.radius-filter {
-  flex: 1;
-}
-
 .radius-label {
   display: block;
   margin-bottom: 8px;
@@ -53,7 +48,6 @@
   margin-top: 8px;
 }
 
-/* Input de especialidad */
 .specialty-input {
   background: rgba(255, 255, 255, 0.1);
   border: none;
@@ -64,7 +58,6 @@
   box-shadow: 0 0 0 2px #9f7aea;
 }
 
-/* Botón buscar */
 .search-btn {
   background: #9f7aea !important;
   border: none !important;
@@ -72,70 +65,103 @@
   height: 48px;
 }
 
+/* Conteo de resultados - MÁS AIRE Y ESTILO */
+.results-count {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #e0e0ff;
+  margin: 20px 0 24px 0;  /* ← Más espacio arriba y abajo */
+  padding: 8px 0;
+  background: rgba(159, 122, 234, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
 /* Mapa */
 .map-wrapper {
   height: 55vh;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  margin-bottom: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  margin-bottom: 28px;  /* ← Más separación con las tarjetas */
 }
 
 .leaflet-map {
   height: 100% !important;
 }
 
-.loading-map {
-  text-align: center;
-  padding: 40px;
-  font-size: 1.1rem;
-  color: #aaa;
-}
-
-/* Lista de usuarios */
+/* Lista de usuarios - Tarjetas mejoradas */
 .users-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
 }
 
 .user-card {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  overflow: hidden;
   transition: all 0.3s ease;
-  cursor: pointer;
+  border: 1px solid rgba(159, 122, 234, 0.2);
 }
 
 .user-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(159, 122, 234, 0.25);
+  border-color: #9f7aea;
 }
 
 .user-card-content {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px;
+  gap: 18px;
+  padding: 16px;
+}
+
+.user-avatar {
+  width: 80px;
+  height: 80px;
+  font-size: 2rem;
+  border: 3px solid #9f7aea;
 }
 
 .user-info h3 {
-  margin: 0 0 4px 0;
-  font-size: 1.25rem;
+  margin: 0 0 8px 0;
+  font-size: 1.35rem;
   color: #fff;
 }
 
-.user-info .specialty {
-  margin: 0 0 6px 0;
-  color: #9f7aea;
-  font-weight: 500;
+/* Chips de especialidades más elegantes */
+.user-info > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
 }
 
+.p-chip-info {
+  background: rgba(159, 122, 234, 0.25) !important;
+  color: #e0e0ff !important;
+  border: 1px solid #9f7aea;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+}
+
+/* Distancia más destacada */
 .user-info .distance {
+  display: flex;
+  align-items: center;
   color: #4ade80;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-top: 8px;
+}
+
+.user-info .distance i {
+  margin-right: 8px;
+  font-size: 1.2rem;
 }
 
 .no-results {
@@ -143,15 +169,5 @@
   color: #999;
   font-size: 1.1rem;
   grid-column: 1 / -1;
-}
-
-.user-avatar {
-  width: 70px;
-  height: 70px;
-  font-size: 1.8rem;
-}
-
-.p-chip-info {
-  background: #9f7aea !important;
-  color: white !important;
+  padding: 40px;
 }
