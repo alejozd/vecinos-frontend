@@ -1,3 +1,4 @@
+// src/pages/Nearby/NearbyPage.jsx
 import React, {
   useState,
   useEffect,
@@ -29,9 +30,9 @@ import "../../styles/NearbyPage.css";
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png  ",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png  ",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png  ",
 });
 
 const NearbyPage = () => {
@@ -58,7 +59,7 @@ const NearbyPage = () => {
           lat,
           lng,
           radius,
-          especialidad || undefined // ← importante: undefined o cadena vacía si no hay filtro
+          especialidad || undefined
         );
         setNearbyUsers(users);
         setUsersVersion((prev) => prev + 1);
@@ -113,7 +114,7 @@ const NearbyPage = () => {
         geo.coords.lat,
         geo.coords.lng,
         searchRadius,
-        especialidadLimpia === "" ? "" : especialidadLimpia // ← envía "" solo si está vacío
+        especialidadLimpia === "" ? "" : especialidadLimpia
       );
     }
   }, [geo.coords, searchRadius, filtroEspecialidad, loadNearbyUsers]);
@@ -129,16 +130,9 @@ const NearbyPage = () => {
   useEffect(() => {
     if (!mapRef.current || !geo.coords) return;
 
-    console.log(
-      "→ Ajustando mapa - usersVersion:",
-      usersVersion,
-      "| usuarios:",
-      nearbyUsers.length
-    );
-
     const timer = setTimeout(() => {
       adjustMapBounds();
-    }, 600); // Un poquito más para dar tiempo a que se rendericen los marcadores
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [usersVersion, geo.coords, adjustMapBounds]);
@@ -169,7 +163,7 @@ const NearbyPage = () => {
   }
 
   return (
-    <div className="nearby-container">
+    <div className="nearby-container px-4 py-6 md:px-6 lg:px-8">
       {/* Overlay loader solo cuando estamos buscando usuarios */}
       {loadingUsers && (
         <div className="loading-overlay">
@@ -192,22 +186,21 @@ const NearbyPage = () => {
       </div>
 
       {/* Contenido principal */}
-      <div className="nearby-content">
+      <div className="nearby-content max-w-screen-xl mx-auto">
         {/* Mapa */}
-        <div className="map-container">
+        <div className="map-container w-full">
           <MapContainer
             center={[geo.coords.lat, geo.coords.lng]}
-            zoom={14} // Más zoom para ver mejor los marcadores
+            zoom={14}
             style={{ height: "100%", width: "100%", borderRadius: "28px" }}
             scrollWheelZoom={true}
             whenCreated={(mapInstance) => {
               mapRef.current = mapInstance;
 
-              // Ajuste inicial cuando el mapa está listo (si ya tienes usuarios)
               setTimeout(() => {
                 if (!mapRef.current) return;
                 mapRef.current.invalidateSize();
-                adjustMapBounds(); // Siempre lo llamamos, aunque solo haya tu posición
+                adjustMapBounds();
               }, 400);
             }}
           >
@@ -259,7 +252,7 @@ const NearbyPage = () => {
         </div>
 
         {/* Controles + Lista */}
-        <div className="controls-and-list">
+        <div className="controls-and-list w-full">
           {/* Radio de búsqueda */}
           <Card className="radius-card glass-card mb-5">
             <div className="flex align-items-center gap-4">
@@ -309,7 +302,6 @@ const NearbyPage = () => {
                     color: "white",
                     border: "1px solid rgba(255,255,255,0.3)",
                   }}
-                  // ← Sin onKeyDown → solo cambia el texto, no busca
                 />
                 {filtroEspecialidad && (
                   <Button
@@ -328,9 +320,8 @@ const NearbyPage = () => {
                     background: "linear-gradient(to right, #8b5cf6, #ec4899)",
                     border: "none",
                   }}
-                  // onClick={handleSearch}
                   onClick={(e) => {
-                    e.preventDefault(); // ← Esto evita cualquier comportamiento por defecto
+                    e.preventDefault();
                     handleSearch();
                   }}
                   loading={loadingUsers}
@@ -355,62 +346,66 @@ const NearbyPage = () => {
               {nearbyUsers.map((user) => (
                 <Card
                   key={user.id}
-                  className="user-card glass-card hover-lift mb-4"
+                  className="user-card glass-card hover-lift mb-4 overflow-hidden"
                 >
-                  <div className="flex gap-5 items-center">
-                    <div className="flex flex-column align-items-center">
-                      <div className="relative">
-                        <Avatar
-                          image={user.foto_url || null}
-                          label={user.nombre[0].toUpperCase()}
-                          size="xlarge"
-                          shape="circle"
-                          className="border-4 border-white shadow-8"
-                        />
-                      </div>
+                  <div className="flex gap-4 p-2">
+                    {/* Avatar + distancia (columna izquierda) */}
+                    <div className="flex flex-column items-center flex-shrink-0">
+                      <Avatar
+                        image={user.foto_url || null}
+                        label={user.nombre[0].toUpperCase()}
+                        size="xlarge"
+                        shape="circle"
+                        className="border-4 border-white shadow-8 user-avatar-mobile"
+                      />
                       <Badge
                         value={`${(user.distance_m / 1000).toFixed(1)} km`}
-                        className="distance-badge-below mt-3"
                         severity="success"
-                        // className="mt-3"
+                        className="distance-badge-below mt-3 text-xs"
                       />
                     </div>
 
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-1">
+                    {/* Información del usuario (centro) */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-white mb-1 truncate">
                         {user.nombre}
                       </h3>
-                      <p className="text-gray-300 text-sm mb-2">{user.email}</p>
-                      <p className="text-gray-200 text-base">
+                      <p className="text-gray-300 text-xs mb-1 truncate">
+                        {user.email}
+                      </p>
+                      <p className="text-gray-200 text-sm mb-3 line-clamp-2">
                         {user.descripcion || "Miembro de la comunidad vecinal"}
                       </p>
+
+                      {/* Especialidades */}
                       {user.especialidades &&
                         user.especialidades.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {user.especialidades.map((esp, index) => (
                               <Badge
                                 key={index}
                                 value={esp.especialidad}
                                 severity="info"
-                                className="p-badge-lg"
+                                className="text-xs py-1 px-2"
                               />
                             ))}
                           </div>
                         )}
                     </div>
 
-                    <div className="flex flex-column gap-3">
+                    {/* Botones (derecha) */}
+                    <div className="flex flex-column gap-3 justify-center">
                       <Button
                         icon="pi pi-comment"
                         rounded
-                        className="p-button-success p-button-outlined"
+                        className="p-button-success p-button-outlined p-2"
                         tooltip="Mensaje"
                         tooltipOptions={{ position: "left" }}
                       />
                       <Button
                         icon="pi pi-phone"
                         rounded
-                        className="p-button-info p-button-outlined"
+                        className="p-button-info p-button-outlined p-2"
                         tooltip="Llamar"
                         tooltipOptions={{ position: "left" }}
                       />

@@ -1,11 +1,19 @@
-/* src/styles/NearbyPage.css */
+/* src/styles/NearbyPage.css - Solución sin overflow */
+
 .nearby-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
-  padding: 2rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: white;
   position: relative;
+  box-sizing: border-box;
+
+  /* 🚫 CORREGIDO: evitar scroll horizontal */
+  overflow-x: hidden;
+
+  /* 🚫 CORREGIDO: quitar 100vw (produce desbordes) */
+  width: 100%;
+  padding: 0;
 }
 
 /* Header */
@@ -13,265 +21,136 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 1rem; /* asegura que no se salga */
 }
 
 .title-gradient {
-  font-size: 2.8rem;
+  font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(to right, #e0e7ff, #c4b5fd, #a78bfa);
+  background: linear-gradient(to right, #c084fc, #ec4899);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin: 0;
-  letter-spacing: -0.5px;
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin: 0.5rem 0 0;
-  font-weight: 500;
+  margin-top: -4px;
+  font-size: 1rem;
+  color: #e2e8f0;
 }
 
 .location-badge {
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 0.8rem 1.8rem;
-  border-radius: 50px;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.25);
-  font-size: 1rem;
+  gap: 6px;
+  background: rgba(255,255,255,0.1);
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 0.9rem;
 }
 
-/* Contenido principal */
+/* 📍 CONTENEDOR PRINCIPAL */
 .nearby-content {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* Mapa */
+/* MAPA */
 .map-container {
-  height: 520px !important;
-  border-radius: 28px;
+  width: 100%;
+  height: 380px;
+  margin-bottom: 1.5rem;
+
+  /* 🔥 clave para evitar overflow */
   overflow: hidden;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.15);
-  position: relative;
+  border-radius: 26px;
 }
 
 .leaflet-container {
-  height: 100% !important;
   width: 100% !important;
-  border-radius: 28px;
+  height: 100% !important;
+  border-radius: 26px;
 }
 
-/* Card del radio de búsqueda */
+/* tarjetas de controles */
 .radius-card {
-  padding: 1.8rem;
-  border-radius: 24px;
-}
-
-.radius-card .pi-compass {
-  color: #a78bfa !important;
-  font-size: 2.2rem !important;
-}
-
-.radius-card label {
-  color: white !important;
-  font-size: 1.1rem !important;
-  font-weight: 600 !important;
-  margin-bottom: 0.8rem;
-  display: block;
-}
-
-/* Slider más grande y visible */
-.radius-card .p-slider {
-  height: 10px !important;
-  background: rgba(255,255,255,0.2) !important;
-  border-radius: 50px;
-}
-
-.radius-card .p-slider .p-slider-range {
-  background: linear-gradient(to right, #a78bfa, #ec4899) !important;
-}
-
-.radius-card .p-slider .p-slider-handle {
-  background: white !important;
-  border: 3px solid #a78bfa !important;
-  width: 24px !important;
-  height: 24px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-}
-
-/* InputNumber bonito */
-.radius-card .p-inputnumber {
-  margin-left: 1rem;
-}
-
-.radius-card .p-inputnumber input {
-  background: rgba(255,255,255,0.15) !important;
-  color: white !important;
-  border: 1px solid rgba(255,255,255,0.3) !important;
-}
-
-/* Glassmorphism premium */
-.glass-card {
-  background: rgba(255, 255, 255, 0.14) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-
-/* Cards de usuarios */
-.user-card {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.hover-lift:hover {
-  transform: translateY(-16px) scale(1.03);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.5) !important;
-}
-
-.user-card h3 {
-  color: white !important;
-  font-weight: 700;
-}
-
-.user-card p {
-  color: rgba(255,255,255,0.8) !important;
-}
-
-/* Badge de distancia */
-.distance-badge {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
-  color: white;
-  font-weight: 700;
-  font-size: 0.75rem !important;
-  bottom: 4px;
-  right: -8px;
-  border: 2px solid white;
-}
-
-/* Empty state */
-.empty-state h3,
-.empty-state p {
-  color: white !important;
-}
-
-/* Botones de acción */
-.user-card .p-button {
-  width: 48px;
-  height: 48px;
-}
-
-/* Marcador "tú" con pulso */
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.8); }
-  70% { box-shadow: 0 0 0 16px rgba(139, 92, 246, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-  .nearby-content { grid-template-columns: 1fr; }
-  .map-container { height: 420px !important; }
-  .title-gradient { font-size: 2.3rem; }
-}
-
-/* Controles y lista en columna */
-.controls-and-list {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Slider aún más bonito */
-.custom-slider .p-slider {
-  height: 12px !important;
-  background: rgba(255,255,255,0.25) !important;
-  border-radius: 50px;
-}
-
-.custom-slider .p-slider .p-slider-range {
-  background: linear-gradient(to right, #a78bfa, #ec4899) !important;
-}
-
-.custom-slider .p-slider .p-slider-handle {
-  width: 28px !important;
-  height: 28px !important;
-  background: white !important;
-  border: 4px solid #a78bfa !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
-}
-
-/* InputNumber más claro */
-.p-inputnumber input {
-  background: rgba(255,255,255,0.2) !important;
-  color: white !important;
-  border: 1px solid rgba(255,255,255,0.4) !important;
-  font-weight: bold;
-}
-
-/* Botones más visibles */
-.p-button-outlined {
-  width: 56px !important;
-  height: 56px !important;
-}
-
-/* Badge de distancia debajo del avatar (nuevo estilo) */
-.distance-badge-below {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
-  color: white !important;
-  font-weight: 800 !important;
-  font-size: 0.85rem !important;
-  padding: -0.3rem 0.8rem !important;
-  border-radius: 50px !important;
-  border: 2.5px solid white !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-  min-width: 70px;
-  text-align: center;  
-}
-
-.shadow-8 {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
-}
-
-/* Opcional: hace que el badge destaque más */
-.distance-badge-below:hover {
-  transform: scale(1.1);
-  transition: all 0.3s ease;
-}
-
-.overlay-loader {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  background: rgba(0,0,0,0.5);
-  padding: 20px;
-  border-radius: 50%;
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  border-radius: 28px; /* opcional: para que coincida con el mapa */
-  /* backdrop-filter: blur(3px);   */
+  box-sizing: border-box;
+}
+
+/* Web responsive: evita que flex-items se salgan */
+.controls-and-list {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* GRID de usuarios */
+.users-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tarjetas */
+.user-card {
+  width: 100%;
+  box-sizing: border-box;
+
+  /* evita que el contenido interno expulse el ancho */
+  overflow: hidden;
+}
+
+.user-card .p-card-body {
+  padding: 0.8rem;
+}
+
+/* Avatar */
+.user-avatar-mobile {
+  width: 68px !important;
+  height: 68px !important;
+}
+
+/* Badges */
+.distance-badge-below {
+  font-size: 0.7rem;
+  padding: 4px 6px;
+}
+
+/* 📱 Ajustes móviles */
+@media (max-width: 480px) {
+  .nearby-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .map-container {
+    height: 300px;
+  }
+
+  .user-card {
+    padding: 0.5rem;
+  }
+
+  .flex {
+    flex-wrap: wrap;
+  }
+}
+
+/* Efecto Glass */
+.glass-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 18px;
 }
