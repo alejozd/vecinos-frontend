@@ -62,12 +62,21 @@ const NearbyPage = () => {
           radius,
           especialidad || undefined
         );
-
+        console.log("➡️ Backend respondió usuarios crudos:", users);
         setNearbyUsers(
           users.map((u) => ({
             ...u,
             lat: u.lat ? parseFloat(u.lat) : null,
             lng: u.lng ? parseFloat(u.lng) : null,
+          }))
+        );
+        console.log(
+          "➡️ Usuarios normalizados (lat/lng como número):",
+          users.map((u) => ({
+            id: u.id,
+            lat: u.lat,
+            lng: u.lng,
+            distance_m: u.distance_m,
           }))
         );
       } catch (err) {
@@ -80,6 +89,13 @@ const NearbyPage = () => {
   );
 
   const adjustMapBounds = useCallback(() => {
+    console.log("🗺️ Ejecutando adjustMapBounds()");
+    console.log("   - geo.coords:", geo.coords);
+    console.log(
+      "   - nearbyUsers filtrados:",
+      nearbyUsers.filter((u) => u.lat && u.lng)
+    );
+
     if (!mapRef.current || !geo.coords) return;
 
     const userPoints = nearbyUsers
@@ -103,6 +119,7 @@ const NearbyPage = () => {
       });
     } else {
       const bounds = L.latLngBounds(allPoints);
+      console.log("🎯 fitBounds se está ejecutando con bounds:", bounds);
       mapRef.current.fitBounds(bounds, {
         padding: [100, 100],
         maxZoom: 15,
@@ -113,9 +130,21 @@ const NearbyPage = () => {
   }, [geo.coords, nearbyUsers]);
 
   const handleSearch = useCallback(async () => {
+    console.log("🔍 Ejecutando handleSearch()");
+    console.log("   - geo.coords:", geo.coords);
+    console.log("   - searchRadius:", searchRadius);
+    console.log("   - filtroEspecialidad:", filtroEspecialidad);
+
     if (!geo.coords) return;
 
     const especialidadLimpia = filtroEspecialidad.trim();
+
+    console.log("📡 Llamando loadNearbyUsers con:", {
+      lat: geo.coords.lat,
+      lng: geo.coords.lng,
+      radius: searchRadius,
+      especialidad: especialidadLimpia,
+    });
 
     await loadNearbyUsers(
       geo.coords.lat,
@@ -139,6 +168,10 @@ const NearbyPage = () => {
   ]);
 
   useEffect(() => {
+    console.log("📍 Coordenadas GPS detectadas:", geo.coords);
+  }, [geo.coords]);
+
+  useEffect(() => {
     if (!mapRef.current) return;
     if (!geo.coords) return;
     if (nearbyUsers.length === 0) return;
@@ -152,8 +185,10 @@ const NearbyPage = () => {
         .map((u) => [parseFloat(u.lat), parseFloat(u.lng)]);
 
       const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
+      console.log("📌 Puntos en el mapa (allPoints):", allPoints);
 
       const bounds = L.latLngBounds(allPoints);
+      console.log("🎯 fitBounds se está ejecutando con bounds:", bounds);
 
       mapRef.current.fitBounds(bounds, {
         padding: [100, 100],
