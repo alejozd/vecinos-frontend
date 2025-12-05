@@ -1,169 +1,152 @@
-/* src/styles/NearbyPage.css - Solución sin overflow */
-
-.nearby-container {
+.nearby-page {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #12121a;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: white;
-  position: relative;
-  box-sizing: border-box;
-
-  /* 🚫 CORREGIDO: evitar scroll horizontal */
-  overflow-x: hidden;
-
-  /* 🚫 CORREGIDO: quitar 100vw (produce desbordes) */
-  width: 100%;
-  padding: 0;
+  color: #fff;
+  padding: 16px;
 }
 
-/* Header */
-.nearby-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 1rem; /* asegura que no se salga */
+.page-title {
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
 
-.title-gradient {
-  font-size: 2rem;
-  font-weight: 800;
-  background: linear-gradient(to right, #c084fc, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.subtitle {
-  margin-top: -4px;
-  font-size: 1rem;
-  color: #e2e8f0;
-}
-
-.location-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.1);
-  padding: 8px 12px;
-  border-radius: 14px;
-  font-size: 0.9rem;
-}
-
-/* 📍 CONTENEDOR PRINCIPAL */
-.nearby-content {
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-/* MAPA */
-.map-container {
-  width: 100%;
-  height: 380px;
-  margin-bottom: 1.5rem;
-
-  /* 🔥 clave para evitar overflow */
-  overflow: hidden;
-  border-radius: 26px;
-}
-
-.leaflet-container {
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: 26px;
-}
-
-/* tarjetas de controles */
-.radius-card {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Web responsive: evita que flex-items se salgan */
-.controls-and-list {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* GRID de usuarios */
-.users-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Tarjetas */
-.user-card {
-  width: 100%;
-  box-sizing: border-box;
-
-  /* evita que el contenido interno expulse el ancho */
-  overflow: hidden;
-}
-
-.user-card .p-card-body {
-  padding: 0.8rem;
-}
-
-/* Avatar */
-.user-avatar-mobile {
-  width: 68px !important;
-  height: 68px !important;
-}
-
-/* Badges */
-.distance-badge-below {
-  font-size: 0.7rem;
-  padding: 4px 6px;
-}
-
-/* 📱 Ajustes móviles */
-@media (max-width: 480px) {
-  .nearby-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .map-container {
-    height: 300px;
-  }
-
-  .user-card {
-    padding: 0.5rem;
-  }
-
-  .flex {
-    flex-wrap: wrap;
-  }
-}
-
-/* Efecto Glass */
-.glass-card {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+/* Filtros */
+.filters-card {
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-radius: 18px;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
+.filters-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .filters-content {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.radius-filter {
+  flex: 1;
+}
+
+.radius-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #ddd;
+}
+
+.custom-slider {
+  margin-top: 8px;
+}
+
+/* Input de especialidad */
+.specialty-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+}
+
+.specialty-input:focus {
+  box-shadow: 0 0 0 2px #9f7aea;
+}
+
+/* Botón buscar */
+.search-btn {
+  background: #9f7aea !important;
+  border: none !important;
+  min-width: 120px;
+  height: 48px;
+}
+
+/* Mapa */
+.map-wrapper {
+  height: 55vh;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
+}
+
+.leaflet-map {
+  height: 100% !important;
+}
+
+.loading-map {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: #aaa;
+}
+
+/* Lista de usuarios */
+.users-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.user-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.user-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.user-card-content {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 9999;
+  gap: 16px;
+  padding: 12px;
+}
+
+.user-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.user-info .specialty {
+  margin: 0 0 6px 0;
+  color: #9f7aea;
+  font-weight: 500;
+}
+
+.user-info .distance {
+  color: #4ade80;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.no-results {
+  text-align: center;
+  color: #999;
+  font-size: 1.1rem;
+  grid-column: 1 / -1;
+}
+
+.user-avatar {
+  width: 70px;
+  height: 70px;
+  font-size: 1.8rem;
 }

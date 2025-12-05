@@ -1,489 +1,222 @@
-// src/pages/Nearby/NearbyPage.jsx
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
-import { useAuth } from "../../hooks/useAuth";
-import useGeolocation from "../../hooks/useGeolocation";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import * as L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 import {
   findNearbyUsers,
   updateCurrentUserLocation,
 } from "../../api/users.api";
-import { ProgressSpinner } from "primereact/progressspinner";
-import { Button } from "primereact/button";
-import { Message } from "primereact/message";
+import { useAuth } from "../../hooks/useAuth";
 import { Slider } from "primereact/slider";
-import { InputNumber } from "primereact/inputnumber";
-import { Avatar } from "primereact/avatar";
-import { Badge } from "primereact/badge";
-import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
-
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-
+import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { Avatar } from "primereact/avatar";
 import "../../styles/NearbyPage.css";
 
-// Fix para iconos de Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+// === ICONOS QUE SÍ FUNCIONAN (usa estos mientras creas los tuyos) ===
+const userIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
-const NearbyPage = () => {
+const providerIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+// Controlador del mapa
+const MapController = ({ points }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!points || points.length === 0) return;
+    const bounds = L.latLngBounds(points);
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+  }, [points, map]);
+  return null;
+};
+
+export default function NearbyPage() {
   const { token } = useAuth();
-  const geoOptions = useMemo(() => ({ enableHighAccuracy: true }), []);
-  const geo = useGeolocation(geoOptions);
 
+  const [geo, setGeo] = useState({ loaded: false, coords: { lat: 0, lng: 0 } });
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [searchRadius, setSearchRadius] = useState(10);
-  const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
-  const mapRef = useRef(null);
+  const [radius, setRadius] = useState(10);
+  const [especialidad, setEspecialidad] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const loadNearbyUsers = useCallback(
-    async (lat, lng, radius, especialidad = "") => {
-      if (!token) return;
-      setLoadingUsers(true);
-      try {
-        await updateCurrentUserLocation(token, lat, lng);
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setGeo({ loaded: true, coords: { lat, lng } });
+        if (token) updateCurrentUserLocation(token, lat, lng);
+      },
+      () => alert("Activa la ubicación para continuar"),
+      { enableHighAccuracy: true }
+    );
+  }, [token]);
 
-        const users = await findNearbyUsers(
-          token,
-          lat,
-          lng,
-          radius,
-          especialidad || undefined
-        );
-        console.log("➡️ Backend respondió usuarios crudos:", users);
-        setNearbyUsers(
-          users.map((u) => ({
-            ...u,
-            lat: u.lat ? parseFloat(u.lat) : null,
-            lng: u.lng ? parseFloat(u.lng) : null,
-          }))
-        );
-        console.log(
-          "➡️ Usuarios normalizados (lat/lng como número):",
-          users.map((u) => ({
-            id: u.id,
-            lat: u.lat,
-            lng: u.lng,
-            distance_m: u.distance_m,
-          }))
-        );
-      } catch (err) {
-        console.error("Error cargando vecinos:", err);
-      } finally {
-        setLoadingUsers(false);
-      }
-    },
-    [token]
+  const loadNearbyUsers = useCallback(async () => {
+    if (!geo.loaded || !token) return;
+    setLoading(true);
+    try {
+      const users = await findNearbyUsers(
+        token,
+        geo.coords.lat,
+        geo.coords.lng,
+        radius,
+        especialidad || undefined
+      );
+      setNearbyUsers(users || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [geo.loaded, geo.coords, radius, especialidad, token]);
+
+  useEffect(() => {
+    if (geo.loaded) loadNearbyUsers();
+  }, [geo.loaded, radius, especialidad]);
+
+  const points = useMemo(
+    () => [
+      [geo.coords.lat, geo.coords.lng],
+      ...nearbyUsers.filter((u) => u.lat && u.lng).map((u) => [u.lat, u.lng]),
+    ],
+    [geo.coords, nearbyUsers]
   );
 
-  const adjustMapBounds = useCallback(() => {
-    console.log("🗺️ Ejecutando adjustMapBounds()");
-    console.log("   - geo.coords:", geo.coords);
-    console.log(
-      "   - nearbyUsers filtrados:",
-      nearbyUsers.filter((u) => u.lat && u.lng)
-    );
-
-    if (!mapRef.current || !geo.coords) return;
-
-    const userPoints = nearbyUsers
-      .filter(
-        (user) => user.lat && user.lng && !isNaN(user.lat) && !isNaN(user.lng)
-      )
-      .map((user) => [parseFloat(user.lat), parseFloat(user.lng)]);
-
-    const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
-
-    if (
-      allPoints.length <= 1 ||
-      allPoints.every(
-        (p) =>
-          Math.abs(p[0] - allPoints[0][0]) < 0.0001 &&
-          Math.abs(p[1] - allPoints[0][1]) < 0.0001
-      )
-    ) {
-      mapRef.current.setView([geo.coords.lat, geo.coords.lng], 14, {
-        animate: true,
-      });
-    } else {
-      const bounds = L.latLngBounds(allPoints);
-      console.log("🎯 fitBounds se está ejecutando con bounds:", bounds);
-      mapRef.current.fitBounds(bounds, {
-        padding: [100, 100],
-        maxZoom: 15,
-        animate: true,
-        duration: 1.2,
-      });
-    }
-  }, [geo.coords, nearbyUsers]);
-
-  const handleSearch = useCallback(async () => {
-    console.log("🔍 Ejecutando handleSearch()");
-    console.log("   - geo.coords:", geo.coords);
-    console.log("   - searchRadius:", searchRadius);
-    console.log("   - filtroEspecialidad:", filtroEspecialidad);
-
-    if (!geo.coords) return;
-
-    const especialidadLimpia = filtroEspecialidad.trim();
-
-    console.log("📡 Llamando loadNearbyUsers con:", {
-      lat: geo.coords.lat,
-      lng: geo.coords.lng,
-      radius: searchRadius,
-      especialidad: especialidadLimpia,
-    });
-
-    await loadNearbyUsers(
-      geo.coords.lat,
-      geo.coords.lng,
-      searchRadius,
-      especialidadLimpia === "" ? "" : especialidadLimpia
-    );
-
-    setTimeout(() => {
-      if (mapRef.current) {
-        mapRef.current.invalidateSize();
-        adjustMapBounds();
-      }
-    }, 300);
-  }, [
-    geo.coords,
-    searchRadius,
-    filtroEspecialidad,
-    loadNearbyUsers,
-    adjustMapBounds,
-  ]);
-
-  useEffect(() => {
-    console.log("📍 Coordenadas GPS detectadas:", geo.coords);
-  }, [geo.coords]);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-    if (!geo.coords) return;
-    if (nearbyUsers.length === 0) return;
-
-    // Asegura que el mapa está renderizado
-    setTimeout(() => {
-      mapRef.current.invalidateSize();
-
-      const userPoints = nearbyUsers
-        .filter((u) => u.lat && u.lng && !isNaN(parseFloat(u.lat)))
-        .map((u) => [parseFloat(u.lat), parseFloat(u.lng)]);
-
-      const allPoints = [[geo.coords.lat, geo.coords.lng], ...userPoints];
-      console.log("📌 Puntos en el mapa (allPoints):", allPoints);
-
-      const bounds = L.latLngBounds(allPoints);
-      console.log("🎯 fitBounds se está ejecutando con bounds:", bounds);
-
-      mapRef.current.fitBounds(bounds, {
-        padding: [100, 100],
-        maxZoom: 15,
-        animate: true,
-        duration: 1.2,
-      });
-    }, 300);
-  }, [nearbyUsers, geo.coords]);
-
-  useEffect(() => {
-    if (!geo.coords) return;
-    handleSearch();
-  }, [geo.coords]);
-
-  // Loading ubicación
-  if (geo.loading) {
-    return (
-      <div className="nearby-container">
-        <div className="skeleton-header" />
-        <div className="skeleton-map" />
-        <div className="grid mt-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="col-12 md:col-6 lg:col-4">
-              <div className="skeleton-card" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Error GPS
-  if (geo.error) {
-    return (
-      <div className="nearby-container p-6">
-        <Message severity="error" text={`Error de ubicación: ${geo.error}`} />
-      </div>
-    );
-  }
+  const resultsText =
+    nearbyUsers.length === 0
+      ? "No se encontraron profesionales"
+      : `${nearbyUsers.length} profesional${
+          nearbyUsers.length === 1 ? "" : "es"
+        } cerca de ti`;
 
   return (
-    <div className="nearby-container px-4 py-6 md:px-6 lg:px-8">
-      {loadingUsers && (
-        <div className="loading-overlay">
-          <ProgressSpinner />
-        </div>
-      )}
+    <div className="nearby-page">
+      <h2 className="page-title">Profesionales Cercanos</h2>
 
-      {/* Header */}
-      <div className="nearby-header">
-        <div>
-          <h1 className="title-gradient">Vecinos Cercanos</h1>
-          <p className="subtitle">
-            {nearbyUsers.length} persona
-            {nearbyUsers.length !== 1 ? "s" : ""} cerca de ti
-          </p>
-        </div>
+      <Card className="filters-card">
+        <div className="filters-content">
+          <div className="radius-filter">
+            <span className="radius-label">Radio de búsqueda: {radius} km</span>
+            <Slider
+              value={radius}
+              onChange={(e) => setRadius(e.value)}
+              min={1}
+              max={50}
+              className="custom-slider"
+            />
+          </div>
 
-        <div className="location-badge">
-          <i className="pi pi-map-marker"></i>
-          <span>{searchRadius} km alrededor</span>
-        </div>
-      </div>
+          <InputText
+            placeholder="Filtrar por especialidad"
+            value={especialidad}
+            onChange={(e) => setEspecialidad(e.target.value)}
+            className="specialty-input"
+          />
 
-      {/* Contenido */}
-      <div className="nearby-content max-w-screen-xl mx-auto">
-        {/* MAPA */}
-        <div className="map-container w-full">
+          <Button
+            label="Buscar"
+            onClick={loadNearbyUsers}
+            loading={loading}
+            className="p-button-rounded p-button-help search-btn"
+          />
+        </div>
+      </Card>
+
+      <div className="results-count">{resultsText}</div>
+
+      {!geo.loaded ? (
+        <div className="loading-map">Obteniendo tu ubicación...</div>
+      ) : (
+        <div className="map-wrapper">
           <MapContainer
             center={[geo.coords.lat, geo.coords.lng]}
             zoom={14}
-            style={{ height: "100%", width: "100%", borderRadius: "28px" }}
-            scrollWheelZoom={true}
-            whenCreated={(mapInstance) => {
-              mapRef.current = mapInstance;
-              setTimeout(() => mapRef.current.invalidateSize(true), 200);
-              setTimeout(() => {
-                if (!mapRef.current) return;
-                adjustMapBounds();
-              }, 600);
-            }}
+            className="leaflet-map"
           >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; OpenStreetMap contributors"
+            />
+            <MapController points={points} />
 
             {/* Tú */}
-            <Marker
-              position={[geo.coords.lat, geo.coords.lng]}
-              icon={L.divIcon({
-                className: "my-location-marker",
-                html: `<div style="background:#8b5cf6;width:20px;height:20px;border-radius:50%;border:4px solid white;animation:pulse 2s infinite;"></div>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14],
-              })}
-            >
-              <Popup>¡Tú estás aquí!</Popup>
+            <Marker position={[geo.coords.lat, geo.coords.lng]} icon={userIcon}>
+              <Popup>
+                <strong>Tú estás aquí</strong>
+              </Popup>
             </Marker>
 
-            {/* Vecinos */}
-            {nearbyUsers
-              .filter(
-                (user) =>
-                  user.lat && user.lng && !isNaN(user.lat) && !isNaN(user.lng)
-              )
-              .map((user) => (
-                <Marker
-                  key={user.id}
-                  position={[parseFloat(user.lat), parseFloat(user.lng)]}
-                  icon={L.divIcon({
-                    className: "neighbor-marker",
-                    html: `<div style="background:#ec4899;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5);"></div>`,
-                    iconSize: [22, 22],
-                    iconAnchor: [11, 11],
-                  })}
-                >
-                  <Popup>
-                    <div style={{ textAlign: "center", fontSize: "0.95rem" }}>
-                      <strong>{user.nombre}</strong>
-                      <br />
-                      {(user.distance_m / 1000).toFixed(1)} km
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+            {/* Profesionales */}
+            {nearbyUsers.map((u) => (
+              <Marker key={u._id} position={[u.lat, u.lng]} icon={providerIcon}>
+                <Popup>
+                  <div style={{ textAlign: "center", fontSize: "14px" }}>
+                    <strong style={{ fontSize: "16px" }}>
+                      {u.nombre || "Sin nombre"}
+                    </strong>
+                    <br />
+                    {u.especialidad || "Profesional"}
+                    <br />
+                    <strong style={{ color: "#9f7aea" }}>
+                      {(u.distance || 0).toFixed(1)} km
+                    </strong>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
           </MapContainer>
         </div>
+      )}
 
-        {/* Controles + lista */}
-        <div className="controls-and-list w-full">
-          <Card className="radius-card glass-card mb-5">
-            <div className="flex align-items-center gap-4">
-              <i
-                className="pi pi-compass text-3xl"
-                style={{ color: "#c4b5fd" }}
-              ></i>
-              <div className="flex-1">
-                <label className="font-bold text-white text-lg block mb-3">
-                  Radio de búsqueda
-                </label>
-                <Slider
-                  value={searchRadius}
-                  onChange={(e) => setSearchRadius(e.value)}
-                  min={1}
-                  max={50}
-                  className="custom-slider"
-                />
-              </div>
-              <InputNumber
-                value={searchRadius}
-                onValueChange={(e) => setSearchRadius(e.value || 10)}
-                suffix=" km"
-                min={1}
-                max={50}
-                showButtons
-                className="w-32"
+      <div className="users-list">
+        {nearbyUsers.length === 0 && !loading && (
+          <p className="no-results">
+            No se encontraron profesionales con los filtros actuales.
+          </p>
+        )}
+
+        {nearbyUsers.map((u) => (
+          <Card key={u._id} className="user-card">
+            <div className="user-card-content">
+              <Avatar
+                image={u.foto_url}
+                label={(u.nombre || "?")[0].toUpperCase()}
+                size="xlarge"
+                shape="circle"
+                className="user-avatar"
               />
-            </div>
-
-            <div className="mt-5">
-              <label className="font-bold text-white text-lg block mb-3">
-                Filtrar por especialidad
-              </label>
-              <div className="p-inputgroup">
-                <InputText
-                  value={filtroEspecialidad}
-                  onChange={(e) => setFiltroEspecialidad(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSearch();
-                    }
-                  }}
-                  placeholder="Ej: plomero, electricista..."
-                  className="w-full"
-                  style={{
-                    background: "rgba(255,255,255,0.15)",
-                    color: "white",
-                    border: "1px solid rgba(255,255,255,0.3)",
-                  }}
-                />
-                {filtroEspecialidad && (
-                  <Button
-                    icon="pi pi-times"
-                    className="p-button-outlined p-button-secondary"
-                    onClick={() => setFiltroEspecialidad("")}
-                  />
-                )}
-              </div>
-
-              <div className="mt-3">
-                <Button
-                  label="Buscar Vecinos"
-                  icon="pi pi-search"
-                  className="w-full p-button-rounded p-button-lg"
-                  style={{
-                    background: "linear-gradient(to right, #8b5cf6, #ec4899)",
-                    border: "none",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSearch();
-                  }}
-                  loading={loadingUsers}
-                />
+              <div className="user-info">
+                <h3>{u.nombre || "Anónimo"}</h3>
+                <p className="specialty">{u.especialidad || "Profesional"}</p>
+                <div className="distance">
+                  <i className="pi pi-map-marker" />
+                  <span>{(u.distance || 0).toFixed(1)} km</span>
+                </div>
               </div>
             </div>
           </Card>
-
-          {/* LISTA DE USUARIOS */}
-          {nearbyUsers.length === 0 ? (
-            <div className="empty-state text-center py-8">
-              <i className="pi pi-users text-8xl text-gray-500 mb-4"></i>
-              <h3 className="text-2xl font-bold text-white">
-                No hay vecinos en este radio
-              </h3>
-              <p className="text-gray-300 text-lg">
-                Aumenta el radio para ver más personas
-              </p>
-            </div>
-          ) : (
-            <div className="users-grid">
-              {nearbyUsers.map((user) => (
-                <Card
-                  key={user.id}
-                  className="user-card glass-card hover-lift mb-4 overflow-hidden"
-                >
-                  <div className="flex gap-4 p-2">
-                    {/* Avatar */}
-                    <div className="flex flex-column items-center flex-shrink-0">
-                      <Avatar
-                        image={user.foto_url || null}
-                        label={user.nombre[0].toUpperCase()}
-                        size="xlarge"
-                        shape="circle"
-                        className="border-4 border-white shadow-8 user-avatar-mobile"
-                      />
-                      <Badge
-                        value={`${(user.distance_m / 1000).toFixed(1)} km`}
-                        severity="success"
-                        className="distance-badge-below mt-3 text-xs"
-                      />
-                    </div>
-
-                    {/* Información */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-white mb-1 truncate">
-                        {user.nombre}
-                      </h3>
-                      <p className="text-gray-300 text-xs mb-1 truncate">
-                        {user.email}
-                      </p>
-                      <p className="text-gray-200 text-sm mb-3 line-clamp-2">
-                        {user.descripcion || "Miembro de la comunidad vecinal"}
-                      </p>
-
-                      {user.especialidades &&
-                        user.especialidades.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {user.especialidades.map((esp, index) => (
-                              <Badge
-                                key={index}
-                                value={esp.especialidad}
-                                severity="info"
-                                className="text-xs py-1 px-2"
-                              />
-                            ))}
-                          </div>
-                        )}
-                    </div>
-
-                    {/* Botones */}
-                    <div className="flex flex-column gap-3 justify-center">
-                      <Button
-                        icon="pi pi-comment"
-                        rounded
-                        className="p-button-success p-button-outlined p-2"
-                        tooltip="Mensaje"
-                        tooltipOptions={{ position: "left" }}
-                      />
-                      <Button
-                        icon="pi pi-phone"
-                        rounded
-                        className="p-button-info p-button-outlined p-2"
-                        tooltip="Llamar"
-                        tooltipOptions={{ position: "left" }}
-                      />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+        ))}
       </div>
     </div>
   );
-};
-
-export default NearbyPage;
+}
