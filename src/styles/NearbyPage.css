@@ -17,6 +17,7 @@
 .filters-card {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 20px;
@@ -76,6 +77,7 @@
   background: rgba(159, 122, 234, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Mapa */
@@ -101,6 +103,7 @@
 .user-card {
   background: rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 18px;
   overflow: hidden;
   transition: all 0.3s ease;
