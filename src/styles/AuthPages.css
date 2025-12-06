@@ -1,0 +1,62 @@
+/* src/styles/AuthPages.css */
+.register-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #12121a 0%, #1e1e2f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.register-card-wrapper {
+  width: 100%;
+  max-width: 420px;
+}
+
+.register-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(159, 122, 234, 0.2);
+}
+
+.register-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+}
+
+.register-btn {
+  height: 3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: #9f7aea !important;
+  border: none !important;
+}
+
+.register-btn:hover {
+  background: #8a65d8 !important;
+  transform: translateY(-2px);
+}
+
+.p-float-label label {
+  color: #ccc !important;
+  font-weight: 500;
+}
+
+.p-float-label input:focus ~ label,
+.p-float-label input.p-filled ~ label {
+  color: #9f7aea !important;
+}
+
+.p-invalid {
+  border-color: #e74c3c !important;
+}
+
+.p-error {
+  color: #e74c3c;
+}

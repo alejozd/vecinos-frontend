@@ -1,36 +1,64 @@
 // src/App.jsx
-
-import { Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, AuthContext } from "./contexts/AuthContext";
+import { useContext } from "react";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
-// Importaciones de Páginas (Asegúrate de que estas rutas son correctas)
+// Páginas
 import LoginPage from "./pages/Auth/LoginPage";
-import NearbyPage from "./pages/Nearby/NearbyPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
+import NearbyPage from "./pages/Nearby/NearbyPage";
 
-// Definición de componente temporal o Página real
-const HomePage = () => <h1>Bienvenido a Vecinos App!</h1>; // Componente temporal de inicio
+// Componente que decide qué mostrar en la raíz
+const RootRedirect = () => {
+  const { user, isLoading } = useContext(AuthContext);
+
+  // Mientras carga el token/perfil
+  if (isLoading) {
+    return (
+      <div className="flex justify-content-center align-items-center min-h-screen bg-gray-900">
+        <i className="pi pi-spin pi-spinner text-6xl text-purple-500"></i>
+      </div>
+    );
+  }
+
+  // Si ya está logueado → va directo a Nearby
+  // Si no → muestra Login
+  return user ? <Navigate to="/nearby" replace /> : <LoginPage />;
+};
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Rutas Públicas */}
-        {/* <Route path="/" element={<HomePage />} /> */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        {/* <Route path="/register" element={<RegisterPage />} /> */}
+        {/* Ruta raíz: decide según autenticación */}
+        <Route path="/" element={<RootRedirect />} />
 
-        {/* Rutas Protegidas (Requieren autenticación) */}
+        {/* /login: mismo comportamiento que / */}
+        <Route path="/login" element={<RootRedirect />} />
+
+        {/* Registro */}
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Rutas protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route path="/nearby" element={<NearbyPage />} />
-          {/* Aquí puedes añadir otras rutas protegidas como el perfil */}
-          {/* <Route path="/profile" element={<ProfilePage />} /> */}
+          {/* Aquí irán después: /profile, /requests, etc. */}
         </Route>
 
-        {/* Ruta 404 - Manejo de URLs no encontradas */}
-        <Route path="*" element={<h1>404 | Página no encontrada</h1>} />
+        {/* 404 bonito */}
+        <Route
+          path="*"
+          element={
+            <div className="flex flex-column justify-content-center align-items-center min-h-screen bg-gray-900 text-white gap-4">
+              <h1 className="text-6xl font-bold">404</h1>
+              <p className="text-2xl">Página no encontrada</p>
+              <a href="/" className="text-purple-400 underline">
+                ← Volver al inicio
+              </a>
+            </div>
+          }
+        />
       </Routes>
     </AuthProvider>
   );

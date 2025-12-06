@@ -8,12 +8,14 @@ import {
   updateCurrentUserLocation,
 } from "../../api/users.api";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { Slider } from "primereact/slider";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Avatar } from "primereact/avatar";
 import { Chip } from "primereact/chip";
+import { confirmDialog } from "primereact/confirmdialog";
 import "../../styles/NearbyPage.css";
 
 // Iconos bonitos y confiables
@@ -56,6 +58,8 @@ export default function NearbyPage() {
   const [radius, setRadius] = useState(10);
   const [especialidad, setEspecialidad] = useState("");
   const [loading, setLoading] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -123,6 +127,29 @@ export default function NearbyPage() {
   return (
     <div className="nearby-page">
       <h2 className="page-title">Profesionales Cercanos</h2>
+
+      <Button
+        icon="pi pi-sign-out"
+        label="Salir"
+        outlined
+        severity="danger"
+        rounded
+        size="small"
+        onClick={() => {
+          confirmDialog({
+            message: "¿Seguro que quieres cerrar sesión?",
+            header: "Cerrar sesión",
+            icon: "pi pi-exclamation-triangle",
+            acceptLabel: "Sí, salir",
+            rejectLabel: "Cancelar",
+            accept: () => {
+              logout();
+              navigate("/");
+            },
+          });
+        }}
+        style={{ marginBottom: "10px" }}
+      />
 
       <Card className="filters-card">
         <div className="filters-content">
