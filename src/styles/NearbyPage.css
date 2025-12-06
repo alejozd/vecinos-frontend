@@ -1,8 +1,10 @@
 .nearby-page {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #12121a;
+  /* font-family: 'Segoe UI', Arial, sans-serif; */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
   min-height: 100vh;
   color: #fff;
+  /* color: white; */
   padding: 16px;
 }
 
@@ -38,11 +40,18 @@
   }
 }
 
-.radius-label {
-  display: block;
-  margin-bottom: 8px;
+.radius-label-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;                    /* ← Espacio perfecto entre icono y texto */
   font-size: 0.95rem;
   color: #ddd;
+  margin-bottom: 8px;
+}
+
+.radius-label-with-icon i {
+  font-size: 1.25rem;
+  color: #9f7aea;               /* ← Icono morado como tu botón */
 }
 
 .custom-slider {
@@ -68,16 +77,33 @@
 
 /* Conteo de resultados - MÁS AIRE Y ESTILO */
 .results-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;                    /* ← Espacio perfecto entre icono y texto */
   text-align: center;
   font-size: 1.15rem;
   font-weight: 600;
   color: #e0e0ff;
-  margin: 20px 0 24px 0;  /* ← Más espacio arriba y abajo */
-  padding: 8px 0;
+  margin: 20px 0 24px 0;
+  padding: 12px 0;
   background: rgba(159, 122, 234, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+.results-icon {
+  font-size: 1.4rem;
+  color: #9f7aea;               /* ← Mismo morado que el botón */
+  animation: pulse 2s infinite; /* ← Opcional: pequeño pulso para que resalte */
+}
+
+/* Animación sutil (opcional pero queda precioso) */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 /* Mapa */

@@ -127,7 +127,11 @@ export default function NearbyPage() {
       <Card className="filters-card">
         <div className="filters-content">
           <div className="radius-filter">
-            <span className="radius-label">Radio de búsqueda: {radius} km</span>
+            <span className="radius-label-with-icon">
+              <i className="pi pi-compass"></i>
+              Radio de búsqueda: {radius} km
+            </span>
+
             <Slider
               value={radius}
               onChange={(e) => setRadius(e.value)}
@@ -153,7 +157,10 @@ export default function NearbyPage() {
         </div>
       </Card>
 
-      <div className="results-count">{resultsText}</div>
+      <div className="results-count">
+        <i className="pi pi-map-marker results-icon"></i>
+        {resultsText}
+      </div>
 
       {!geo.loaded ? (
         <div className="loading-map">Obteniendo tu ubicación...</div>
