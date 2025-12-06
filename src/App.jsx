@@ -2,6 +2,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 import { useContext } from "react";
+import { ConfirmDialog } from "primereact/confirmdialog";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // Páginas
@@ -30,6 +31,7 @@ const RootRedirect = () => {
 function App() {
   return (
     <AuthProvider>
+      <ConfirmDialog />
       <Routes>
         {/* Ruta raíz: decide según autenticación */}
         <Route path="/" element={<RootRedirect />} />

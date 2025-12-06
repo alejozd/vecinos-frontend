@@ -126,30 +126,31 @@ export default function NearbyPage() {
 
   return (
     <div className="nearby-page">
-      <h2 className="page-title">Profesionales Cercanos</h2>
-
-      <Button
-        icon="pi pi-sign-out"
-        label="Salir"
-        outlined
-        severity="danger"
-        rounded
-        size="small"
-        onClick={() => {
-          confirmDialog({
-            message: "¿Seguro que quieres cerrar sesión?",
-            header: "Cerrar sesión",
-            icon: "pi pi-exclamation-triangle",
-            acceptLabel: "Sí, salir",
-            rejectLabel: "Cancelar",
-            accept: () => {
-              logout();
-              navigate("/");
-            },
-          });
-        }}
-        style={{ marginBottom: "10px" }}
-      />
+      <div className="nearby-header">
+        <h2 className="page-title">Profesionales Cercanos</h2>
+        <Button
+          icon="pi pi-sign-out"
+          label="Salir"
+          outlined
+          severity="danger"
+          rounded
+          size="small"
+          className="logout-btn"
+          onClick={() => {
+            confirmDialog({
+              message: "¿Seguro que quieres cerrar sesión?",
+              header: "Cerrar sesión",
+              icon: "pi pi-exclamation-triangle",
+              acceptLabel: "Sí, salir",
+              rejectLabel: "Cancelar",
+              accept: () => {
+                logout(); // ← Limpia token y user
+                navigate("/", { replace: true }); // ← Forzar navegación a raíz
+              },
+            });
+          }}
+        />
+      </div>
 
       <Card className="filters-card">
         <div className="filters-content">

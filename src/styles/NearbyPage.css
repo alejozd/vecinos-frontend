@@ -15,6 +15,20 @@
   font-weight: 600;
 }
 
+.nearby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: #fff;
+}
+
+.logout-btn {
+  min-width: 100px;
+}
+
 /* Filtros */
 .filters-card {
   background: rgba(255, 255, 255, 0.08);
