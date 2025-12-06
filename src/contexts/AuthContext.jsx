@@ -27,8 +27,19 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         setToken(data.token);
         setUser(data.user);
-        localStorage.setItem("token", data.token);
-        return true;
+        if (res.ok) {
+          setToken(data.token);
+          setUser(data.user);
+          localStorage.setItem("token", data.token);
+
+          // Solo si no tiene especialidades → marcar que debe ver perfil
+          const especialidades = data.user.especialidades || [];
+          if (especialidades.length === 0) {
+            localStorage.setItem("mostrarPerfil", "true");
+          }
+
+          return true;
+        }
       } else {
         throw new Error(data.msg || "Error de login");
       }

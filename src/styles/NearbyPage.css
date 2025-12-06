@@ -25,6 +25,14 @@
   color: #fff;
 }
 
+.profile-link {
+  text-decoration: none;
+}
+
+.profile-avatar-header {
+  border: 3px solid #9f7aea;
+}
+
 .logout-btn {
   min-width: 100px;
 }

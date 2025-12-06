@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
 import NearbyPage from "./pages/Nearby/NearbyPage";
+import ProfilePage from "./pages/Profile/ProfilePage";
 
 // Componente que decide qué mostrar en la raíz
 const RootRedirect = () => {
@@ -46,6 +47,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/nearby" element={<NearbyPage />} />
           {/* Aquí irán después: /profile, /requests, etc. */}
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         {/* 404 bonito */}

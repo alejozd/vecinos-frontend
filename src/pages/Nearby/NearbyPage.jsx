@@ -8,7 +8,7 @@ import {
   updateCurrentUserLocation,
 } from "../../api/users.api";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Slider } from "primereact/slider";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
@@ -60,6 +60,23 @@ export default function NearbyPage() {
   const [loading, setLoading] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Solo ejecutar una vez por sesión
+  useEffect(() => {
+    if (!user) return;
+
+    const especialidades = user.especialidades || [];
+    const yaMostroPerfil = localStorage.getItem("perfilMostrado");
+    if (
+      especialidades.length === 0 &&
+      !yaMostroPerfil &&
+      window.location.pathname !== "/profile"
+    ) {
+      localStorage.setItem("perfilMostrado", "true");
+      navigate("/profile", { replace: true });
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -127,6 +144,15 @@ export default function NearbyPage() {
   return (
     <div className="nearby-page">
       <div className="nearby-header">
+        <Link to="/profile" className="profile-link">
+          <Avatar
+            image={user?.foto_url}
+            label={user?.nombre?.[0] || "U"}
+            size="large"
+            shape="circle"
+            className="profile-avatar-header"
+          />
+        </Link>
         <h2 className="page-title">Profesionales Cercanos</h2>
         <Button
           icon="pi pi-sign-out"
@@ -135,18 +161,11 @@ export default function NearbyPage() {
           severity="danger"
           rounded
           size="small"
-          className="logout-btn"
           onClick={() => {
             confirmDialog({
-              message: "¿Seguro que quieres cerrar sesión?",
-              header: "Cerrar sesión",
-              icon: "pi pi-exclamation-triangle",
-              acceptLabel: "Sí, salir",
-              rejectLabel: "Cancelar",
-              accept: () => {
-                logout(); // ← Limpia token y user
-                navigate("/", { replace: true }); // ← Forzar navegación a raíz
-              },
+              message: "¿Cerrar sesión?",
+              header: "Salir",
+              accept: () => logout(),
             });
           }}
         />
