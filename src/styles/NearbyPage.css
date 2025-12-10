@@ -30,7 +30,12 @@
 }
 
 .profile-avatar-header {
+  width: 56px !important;
+  height: 56px !important;
+  font-size: 1.6rem !important;
+  font-weight: 700;
   border: 3px solid #9f7aea;
+  background: rgba(159, 122, 234, 0.4);
 }
 
 .logout-btn {
@@ -91,10 +96,19 @@
 }
 
 .search-btn {
-  background: #9f7aea !important;
+  background: linear-gradient(45deg, #9f7aea, #c084fc) !important;
   border: none !important;
-  min-width: 120px;
-  height: 48px;
+  min-width: 140px;
+  /* height: 52px; */
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(159, 122, 234, 0.4);
+  transition: all 0.3s;
+}
+
+.search-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(159, 122, 234, 0.6);
 }
 
 /* Conteo de resultados - MÁS AIRE Y ESTILO */
@@ -172,10 +186,20 @@
 }
 
 .user-avatar {
-  width: 80px;
-  height: 80px;
-  font-size: 2rem;
+  width: 80px !important;
+  height: 80px !important;
+  min-width: 80px !important;
+  min-height: 80px !important;
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 3px solid #9f7aea;
+  background: rgba(159, 122, 234, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 20px rgba(159, 122, 234, 0.4);
 }
 
 .user-info h3 {

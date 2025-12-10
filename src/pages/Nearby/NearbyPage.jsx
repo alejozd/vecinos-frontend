@@ -200,6 +200,7 @@ export default function NearbyPage() {
             onClick={loadNearbyUsers}
             loading={loading}
             className="p-button-rounded p-button-help search-btn"
+            icon="pi pi-search"
           />
         </div>
       </Card>
