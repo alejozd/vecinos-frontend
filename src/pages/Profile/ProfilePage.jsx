@@ -40,6 +40,7 @@ export default function ProfilePage() {
   const [nuevaEspecialidad, setNuevaEspecialidad] = useState("");
   const [experiencia, setExperiencia] = useState(null);
   const [descEsp, setDescEsp] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -120,11 +121,23 @@ export default function ProfilePage() {
       descripcion: descEsp,
     };
 
-    setFormData((prev) => ({
-      ...prev,
-      especialidades: [...prev.especialidades, nueva],
-    }));
+    if (editingIndex !== null) {
+      // EDITAR
+      setFormData((prev) => {
+        const updated = [...prev.especialidades];
+        updated[editingIndex] = nueva;
+        return { ...prev, especialidades: updated };
+      });
+      setEditingIndex(null);
+    } else {
+      // AGREGAR
+      setFormData((prev) => ({
+        ...prev,
+        especialidades: [...prev.especialidades, nueva],
+      }));
+    }
 
+    // Limpiar
     setShowAddDialog(false);
     setNuevaEspecialidad("");
     setExperiencia(null);
@@ -254,31 +267,39 @@ export default function ProfilePage() {
                 formData.especialidades.map((esp, i) => (
                   <Chip
                     key={i}
-                    // label={`${esp.especialidad} • ${esp.experiencia} años${
-                    //   esp.descripcion ? ` • ${esp.descripcion}` : ""
-                    // }`}
                     label={`${esp.especialidad} • ${esp.experiencia} años`}
                     removable
                     onRemove={() => eliminarEspecialidad(i)}
-                    className="mb-2"
+                    className="mb-2 chip-editable"
+                    onClick={() => {
+                      setNuevaEspecialidad(esp.especialidad);
+                      setExperiencia(esp.experiencia);
+                      setDescEsp(esp.descripcion || "");
+                      setEditingIndex(i);
+                      setShowAddDialog(true);
+                    }}
                   />
                 ))
               )}
             </div>
           </div>
 
-          <Button
-            label="Guardar cambios"
-            icon="pi pi-save"
-            className="mt-5 p-button-help"
-            loading={loading}
-            onClick={guardarPerfil}
-          />
+          <div className="flex justify-content-center mt-5">
+            <Button
+              label="Guardar cambios"
+              icon="pi pi-save"
+              className="p-button-help save-btn"
+              loading={loading}
+              onClick={guardarPerfil}
+            />
+          </div>
         </Card>
 
         {/* Dialog para agregar especialidad */}
         <Dialog
-          header="Nueva especialidad"
+          header={
+            editingIndex !== null ? "Editar especialidad" : "Nueva especialidad"
+          }
           visible={showAddDialog}
           onHide={() => setShowAddDialog(false)}
           style={{ width: "90vw", maxWidth: "500px" }}
@@ -319,10 +340,15 @@ export default function ProfilePage() {
             <div className="flex justify-content-end gap-3 mt-4">
               <Button
                 label="Cancelar"
-                className="p-button-text"
+                text
+                severity="danger"
                 onClick={() => setShowAddDialog(false)}
               />
-              <Button label="Agregar" onClick={agregarEspecialidad} />
+              <Button
+                label="Agregar"
+                severity="success"
+                onClick={agregarEspecialidad}
+              />
             </div>
           </div>
         </Dialog>

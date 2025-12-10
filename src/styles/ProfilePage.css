@@ -88,3 +88,27 @@
   border: 1px solid #9f7aea;
   font-weight: 500;
 }
+
+.save-btn {
+  min-width: 220px;
+  height: 48px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(159, 122, 234, 0.4);
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(159, 122, 234, 0.5);
+}
+
+.chip-editable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chip-editable:hover {
+  background: rgba(159, 122, 234, 0.4) !important;
+  transform: scale(1.05);
+}
