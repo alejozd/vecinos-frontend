@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  Circle,
+} from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -50,6 +57,23 @@ const MapController = ({ points }) => {
   }, [points, map]);
   return null;
 };
+
+// Componente: Botón para centrar en mi ubicación
+function LocateButton() {
+  const map = useMap();
+
+  return (
+    <button
+      type="button"
+      className="custom-locate-button"
+      onClick={() => map.locate({ setView: true, maxZoom: 16, animate: true })}
+      title="Centrar en mi ubicación"
+      aria-label="Centrar mapa en mi ubicación"
+    >
+      <i className="pi pi-crosshair" />
+    </button>
+  );
+}
 
 export default function NearbyPage() {
   const { token } = useAuth();
@@ -120,9 +144,24 @@ export default function NearbyPage() {
     }
   }, [geo.loaded, geo.coords, radius, especialidad, token]);
 
+  function SkeletonCard() {
+    return (
+      <Card className="user-card skeleton-card">
+        <div className="user-card-content">
+          <div className="skeleton-avatar" />
+          <div className="user-info skeleton-info">
+            <div className="skeleton-line long" />
+            <div className="skeleton-line short" />
+            <div className="skeleton-line medium" />
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   useEffect(() => {
     if (geo.loaded) loadNearbyUsers();
-  }, [geo.loaded, radius, especialidad]);
+  }, [geo.loaded, radius, token]);
 
   const points = useMemo(
     () => [
@@ -225,6 +264,21 @@ export default function NearbyPage() {
             />
             <MapController points={points} />
 
+            <Circle
+              center={[geo.coords.lat, geo.coords.lng]}
+              radius={radius * 1000} // km → metros
+              pathOptions={{
+                fillColor: "#9f7aea",
+                fillOpacity: 0.25,
+                color: "#c084fc",
+                weight: 4,
+                opacity: 1,
+                dashArray: "10, 10",
+              }}
+            />
+
+            <LocateButton />
+
             {/* Tu ubicación */}
             <Marker position={[geo.coords.lat, geo.coords.lng]} icon={userIcon}>
               <Popup>
@@ -254,52 +308,62 @@ export default function NearbyPage() {
 
       {/* Lista de profesionales */}
       <div className="users-list">
-        {nearbyUsers.length === 0 && !loading && (
+        {loading ? (
+          // Mostrar 6 skeletons mientras carga
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : nearbyUsers.length === 0 ? (
           <p className="no-results">
             No se encontraron profesionales con los filtros actuales.
           </p>
-        )}
-
-        {nearbyUsers.map((u) => (
-          <Card key={u.id} className="user-card">
-            <div className="user-card-content">
-              <Avatar
-                image={u.foto_url || undefined}
-                label={u.nombre?.[0]?.toUpperCase() || "?"}
-                size="xlarge"
-                shape="circle"
-                className="user-avatar"
-              />
-              <div className="user-info">
-                <h3>{u.nombre}</h3>
-
-                {/* Especialidades como chips */}
-                <div
-                  style={{
-                    margin: "8px 0",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "6px",
-                  }}
-                >
-                  {u.especialidadesList.map((esp, i) => (
-                    <Chip
-                      key={i}
-                      label={esp}
-                      className="p-chip-info"
-                      style={{ fontSize: "0.85rem" }}
+        ) : (
+          nearbyUsers.map((u) => (
+            <Card key={u.id} className="user-card">
+              <div className="user-card-content">
+                <Avatar
+                  image={u.foto_url || undefined}
+                  label={u.nombre?.[0]?.toUpperCase() || "?"}
+                  size="xlarge"
+                  shape="circle"
+                  className="user-avatar"
+                />
+                <div className="user-info">
+                  <h3>{u.nombre}</h3>
+                  <div
+                    style={{
+                      margin: "8px 0",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "6px",
+                    }}
+                  >
+                    {u.especialidadesList.map((esp, i) => (
+                      <Chip
+                        key={i}
+                        label={esp}
+                        className="p-chip-info"
+                        style={{ fontSize: "0.85rem" }}
+                      />
+                    ))}
+                  </div>
+                  <div className="distance">
+                    <i
+                      className="pi pi-map-marker"
+                      style={{ marginRight: 8 }}
                     />
-                  ))}
-                </div>
-
-                <div className="distance">
-                  <i className="pi pi-map-marker" style={{ marginRight: 8 }} />
-                  <strong>{u.distanceKm} km</strong>
+                    <strong>{u.distanceKm} km</strong>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );
