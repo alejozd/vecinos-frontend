@@ -205,9 +205,16 @@ export default function NearbyPage() {
           size="small"
           onClick={() => {
             confirmDialog({
-              message: "¿Cerrar sesión?",
-              header: "Salir",
+              message: "¿Estás seguro de que quieres cerrar sesión?",
+              header: "Cerrar sesión",
+              icon: "pi pi-exclamation-triangle",
+              acceptLabel: "Sí, salir",
+              rejectLabel: "Cancelar",
+              acceptClassName: "p-button-success",
+              rejectClassName: "p-button-danger p-button-text",
+              defaultFocus: "reject",
               accept: () => logout(),
+              reject: () => {}, // opcional
             });
           }}
         />
