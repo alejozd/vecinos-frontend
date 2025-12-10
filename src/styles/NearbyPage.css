@@ -339,3 +339,28 @@
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
+
+.professional-modal .p-dialog-content {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  color: white;
+}
+
+.modal-avatar {
+  width: 120px;
+  height: 120px;
+  border: 5px solid #9f7aea;
+  box-shadow: 0 0 30px rgba(159, 122, 234, 0.5);
+}
+
+.specialty-item {
+  background: rgba(159, 122, 234, 0.15);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(159, 122, 234, 0.3);
+  flex: 1;
+  min-width: 200px;
+}

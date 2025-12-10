@@ -23,6 +23,7 @@ import { Card } from "primereact/card";
 import { Avatar } from "primereact/avatar";
 import { Chip } from "primereact/chip";
 import { confirmDialog } from "primereact/confirmdialog";
+import ProfessionalModal from "../../components/modals/ProfessionalModal";
 import "../../styles/NearbyPage.css";
 
 // Iconos bonitos y confiables
@@ -85,6 +86,8 @@ export default function NearbyPage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [selectedProfessional, setSelectedProfessional] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Solo ejecutar una vez por sesión
   useEffect(() => {
@@ -288,7 +291,17 @@ export default function NearbyPage() {
 
             {/* Profesionales */}
             {nearbyUsers.map((u) => (
-              <Marker key={u.id} position={[u.lat, u.lng]} icon={providerIcon}>
+              <Marker
+                key={u.id}
+                position={[u.lat, u.lng]}
+                icon={providerIcon}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedProfessional(u);
+                    setModalVisible(true);
+                  },
+                }}
+              >
                 <Popup>
                   <div style={{ textAlign: "center", minWidth: 150 }}>
                     <strong style={{ fontSize: "16px" }}>{u.nombre}</strong>
@@ -324,7 +337,15 @@ export default function NearbyPage() {
           </p>
         ) : (
           nearbyUsers.map((u) => (
-            <Card key={u.id} className="user-card">
+            <Card
+              key={u.id}
+              className="user-card"
+              onClick={() => {
+                setSelectedProfessional(u);
+                setModalVisible(true);
+              }}
+              style={{ cursor: "pointer" }}
+            >
               <div className="user-card-content">
                 <Avatar
                   image={u.foto_url || undefined}
@@ -365,6 +386,12 @@ export default function NearbyPage() {
           ))
         )}
       </div>
+      {/* MODAL DEL PROFESIONAL*/}
+      <ProfessionalModal
+        professional={selectedProfessional}
+        visible={modalVisible}
+        onHide={() => setModalVisible(false)}
+      />
     </div>
   );
 }
