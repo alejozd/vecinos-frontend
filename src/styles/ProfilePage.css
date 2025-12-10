@@ -16,6 +16,7 @@
   color: #9f7aea;
   text-decoration: none;
   font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .profile-card {
@@ -26,16 +27,64 @@
   padding: 2rem;
   max-width: 800px;
   margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .profile-avatar {
   width: 120px;
   height: 120px;
   border: 4px solid #9f7aea;
+  box-shadow: 0 0 20px rgba(159, 122, 234, 0.4);
 }
 
 .specialties-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+/* ESPACIADO PERFECTO ENTRE CAMPOS */
+.field-wrapper {
+  margin-bottom: 1.5rem; /* ← Espacio perfecto entre cada campo */
+}
+
+.field-wrapper label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #e0e0ff;
+  font-size: 1rem;
+}
+
+.field-wrapper .p-inputtext,
+.field-wrapper .p-inputtextarea,
+.field-wrapper .p-dropdown {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(159, 122, 234, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+}
+
+.field-wrapper .p-inputtext:focus,
+.field-wrapper .p-inputtextarea:focus,
+.field-wrapper .p-dropdown:focus {
+  outline: none;
+  border-color: #9f7aea;
+  box-shadow: 0 0 0 2px rgba(159, 122, 234, 0.3);
+}
+
+.field-wrapper .p-inputtextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Chip más bonito */
+.p-chip {
+  background: rgba(159, 122, 234, 0.2) !important;
+  color: #e0e0ff !important;
+  border: 1px solid #9f7aea;
+  font-weight: 500;
 }

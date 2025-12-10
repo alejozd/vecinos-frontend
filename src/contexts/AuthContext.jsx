@@ -56,6 +56,25 @@ export const AuthProvider = ({ children }) => {
     window.location.href = "/";
   };
 
+  const refreshUser = async () => {
+    if (!token) return null;
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const profile = await res.json();
+        setUser(profile);
+        return profile;
+      }
+    } catch (error) {
+      console.error("Error refrescando perfil:", error);
+    }
+    return null;
+  };
+
   // ------------------------------------------
   // Carga de Perfil (Validar token al iniciar)
   // ------------------------------------------
@@ -91,7 +110,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, login, logout, isAuthenticated: !!user }}
+      value={{
+        user,
+        token,
+        isLoading,
+        login,
+        logout,
+        refreshUser,
+        isAuthenticated: !!user,
+      }}
     >
       {children}
     </AuthContext.Provider>

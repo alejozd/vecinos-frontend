@@ -33,12 +33,13 @@ const especialidadesComunes = [
 ];
 
 export default function ProfilePage() {
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const toast = useRef(null);
   const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [nuevaEspecialidad, setNuevaEspecialidad] = useState("");
   const [experiencia, setExperiencia] = useState(null);
+  const [descEsp, setDescEsp] = useState("");
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -65,6 +66,7 @@ export default function ProfilePage() {
   const guardarPerfil = async () => {
     setLoading(true);
     try {
+      console.log(formData);
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
         method: "PUT",
         headers: {
@@ -81,13 +83,27 @@ export default function ProfilePage() {
           detail: "Perfil actualizado",
           life: 3000,
         });
+
+        await refreshUser();
+
+        setFormData({
+          nombre: user.nombre || "",
+          apellido: user.apellido || "",
+          telefono: user.telefono || "",
+          foto_url: user.foto_url || "",
+          descripcion: user.descripcion || "",
+          especialidades: user.especialidades || [],
+        });
+      } else {
+        const error = await res.json();
+        throw new Error(error.msg || "Error del servidor");
       }
     } catch (err) {
       console.error("Error guardando perfil:", err);
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: "No se pudo guardar",
+        detail: err.message || "No se pudo guardar",
         life: 3000,
       });
     } finally {
@@ -101,7 +117,7 @@ export default function ProfilePage() {
     const nueva = {
       especialidad: nuevaEspecialidad,
       experiencia,
-      descripcion: "",
+      descripcion: descEsp,
     };
 
     setFormData((prev) => ({
@@ -112,6 +128,7 @@ export default function ProfilePage() {
     setShowAddDialog(false);
     setNuevaEspecialidad("");
     setExperiencia(null);
+    setDescEsp("");
   };
 
   const eliminarEspecialidad = (index) => {
@@ -136,70 +153,90 @@ export default function ProfilePage() {
           <div className="text-center mb-5">
             <Avatar
               image={formData.foto_url || "/default-avatar.png"}
+              label={formData.nombre[0] || "U"}
               size="xlarge"
               shape="circle"
               className="profile-avatar"
             />
-            <h2 className="mt-3">
+            <h2 className="mt-3 label-field">
               {formData.nombre} {formData.apellido}
             </h2>
           </div>
 
-          <div className="grid">
-            <div className="col-12 md:col-6">
-              <label>Nombre</label>
-              <InputText
-                value={formData.nombre}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, nombre: e.target.value }))
-                }
-              />
+          <div className="p-grid p-fluid">
+            <div className="p-col-12 p-md-6">
+              <div className="field-wrapper">
+                <label>Nombre</label>
+                <InputText
+                  value={formData.nombre}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, nombre: e.target.value }))
+                  }
+                />
+              </div>
             </div>
-            <div className="col-12 md:col-6">
-              <label>Apellido</label>
-              <InputText
-                value={formData.apellido}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, apellido: e.target.value }))
-                }
-              />
+            <div className="p-col-12 p-md-6">
+              <div className="field-wrapper">
+                <label>Apellido</label>
+                <InputText
+                  value={formData.apellido}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      apellido: e.target.value,
+                    }))
+                  }
+                />
+              </div>
             </div>
-            <div className="col-12 md:col-6">
-              <label>Teléfono / WhatsApp</label>
-              <InputText
-                value={formData.telefono}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, telefono: e.target.value }))
-                }
-              />
+            <div className="p-col-12 p-md-6">
+              <div className="field-wrapper">
+                <label>Teléfono / WhatsApp</label>
+                <InputText
+                  value={formData.telefono}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      telefono: e.target.value,
+                    }))
+                  }
+                />
+              </div>
             </div>
-            <div className="col-12 md:col-6">
-              <label>URL de foto (opcional)</label>
-              <InputText
-                value={formData.foto_url}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, foto_url: e.target.value }))
-                }
-                placeholder="https://..."
-              />
+            <div className="p-col-12 p-md-6">
+              <div className="field-wrapper">
+                <label>URL de foto (opcional)</label>
+                <InputText
+                  value={formData.foto_url}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      foto_url: e.target.value,
+                    }))
+                  }
+                  placeholder="https://..."
+                />
+              </div>
             </div>
-            <div className="col-12">
-              <label>Descripción / Sobre mí</label>
-              <InputTextarea
-                rows={4}
-                value={formData.descripcion}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    descripcion: e.target.value,
-                  }))
-                }
-                placeholder="Ej: Electricista con 8 años de experiencia en Bogotá..."
-              />
+            <div className="p-col-12">
+              <div className="field-wrapper">
+                <label>Descripción / Sobre mí</label>
+                <InputTextarea
+                  rows={4}
+                  value={formData.descripcion}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      descripcion: e.target.value,
+                    }))
+                  }
+                  placeholder="Ej: Electricista con 8 años de experiencia en Bogotá..."
+                />
+              </div>
             </div>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-5 label-field">
             <div className="flex justify-content-between align-items-center mb-3">
               <h3>Mis especialidades</h3>
               <Button
@@ -217,6 +254,9 @@ export default function ProfilePage() {
                 formData.especialidades.map((esp, i) => (
                   <Chip
                     key={i}
+                    // label={`${esp.especialidad} • ${esp.experiencia} años${
+                    //   esp.descripcion ? ` • ${esp.descripcion}` : ""
+                    // }`}
                     label={`${esp.especialidad} • ${esp.experiencia} años`}
                     removable
                     onRemove={() => eliminarEspecialidad(i)}
@@ -230,7 +270,7 @@ export default function ProfilePage() {
           <Button
             label="Guardar cambios"
             icon="pi pi-save"
-            className="w-full mt-5 p-button-help"
+            className="mt-5 p-button-help"
             loading={loading}
             onClick={guardarPerfil}
           />
@@ -265,6 +305,15 @@ export default function ProfilePage() {
                 min={0}
                 max={50}
                 showButtons
+              />
+            </div>
+            <div className="field">
+              <label>Descripción de tu expertise (opcional)</label>
+              <InputTextarea
+                value={descEsp}
+                onChange={(e) => setDescEsp(e.target.value)}
+                rows={3}
+                placeholder="Ej: Reparaciones avanzadas en casas y apartamentos..."
               />
             </div>
             <div className="flex justify-content-end gap-3 mt-4">
