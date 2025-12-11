@@ -80,7 +80,7 @@ export default function NearbyPage() {
   const { token } = useAuth();
   const [geo, setGeo] = useState({ loaded: false, coords: { lat: 0, lng: 0 } });
   const [nearbyUsers, setNearbyUsers] = useState([]);
-  const [radius, setRadius] = useState(10);
+  const [radius, setRadius] = useState(5);
   const [especialidad, setEspecialidad] = useState("");
   const [loading, setLoading] = useState(false);
   const { logout } = useAuth();
@@ -232,7 +232,7 @@ export default function NearbyPage() {
               value={radius}
               onChange={(e) => setRadius(e.value)}
               min={1}
-              max={50}
+              max={15}
               className="custom-slider"
             />
           </div>
