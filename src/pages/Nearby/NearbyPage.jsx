@@ -1,103 +1,69 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-  Circle,
-} from "react-leaflet";
-import * as L from "leaflet";
-import "leaflet/dist/leaflet.css";
-
+import { useState, useEffect, useCallback } from "react";
 import {
   findNearbyUsers,
   updateCurrentUserLocation,
 } from "../../api/users.api";
 import { useAuth } from "../../hooks/useAuth";
-import { Link, useNavigate } from "react-router-dom";
-import { Slider } from "primereact/slider";
-import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
-import { Card } from "primereact/card";
-import { Avatar } from "primereact/avatar";
-import { Chip } from "primereact/chip";
-import { confirmDialog } from "primereact/confirmdialog";
+import NearbyHeader from "./NearbyHeader";
+import FiltersCard from "./FiltersCard";
+import MapSection from "./MapSection";
+import ProfessionalsList from "./ProfessionalsList";
+import { Link, useNavigate } from "react-router-dom"; // ← AGREGA ESTO
+import * as L from "leaflet";
+import iconUrl from "leaflet/dist/images/marker-icon.png";
+import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import ProfessionalModal from "../../components/modals/ProfessionalModal";
 import "../../styles/NearbyPage.css";
 
-// Iconos bonitos y confiables
-const userIcon = new L.Icon({
+const DefaultIcon = L.icon({
+  iconUrl,
+  shadowUrl,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Tu ubicación del usuario (azul)
+const userIcon = L.icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  shadowUrl,
   iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  iconAnchor: [12, 12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
 
-const providerIcon = new L.Icon({
+// Profesional (morado)
+const providerIcon = L.icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  shadowUrl,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
 
-const MapController = ({ points }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (!points || points.length === 0) return;
-    const bounds = L.latLngBounds(points);
-    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
-  }, [points, map]);
-  return null;
-};
-
-// Componente: Botón para centrar en mi ubicación
-function LocateButton() {
-  const map = useMap();
-
-  return (
-    <button
-      type="button"
-      className="custom-locate-button"
-      onClick={() => map.locate({ setView: true, maxZoom: 16, animate: true })}
-      title="Centrar en mi ubicación"
-      aria-label="Centrar mapa en mi ubicación"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="white"
-        width="24px"
-        height="24px"
-      >
-        <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
-      </svg>
-    </button>
-  );
-}
-
 export default function NearbyPage() {
-  const { token } = useAuth();
+  const { token, user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const [geo, setGeo] = useState({ loaded: false, coords: { lat: 0, lng: 0 } });
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const [radius, setRadius] = useState(5);
   const [especialidad, setEspecialidad] = useState("");
   const [loading, setLoading] = useState(false);
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const handleProfessionalClick = (professional) => {
+    setSelectedProfessional(professional);
+    setModalVisible(true);
+  };
 
-  // Solo ejecutar una vez por sesión
   useEffect(() => {
     if (!user) return;
 
@@ -138,14 +104,16 @@ export default function NearbyPage() {
         especialidad || undefined
       );
 
-      // Procesamos los datos para que sean más fáciles de usar
-      const processedUsers = (users || []).map((u) => ({
-        ...u,
-        lat: parseFloat(u.lat),
-        lng: parseFloat(u.lng),
-        distanceKm: u.distance_m ? (u.distance_m / 1000).toFixed(2) : "0.0",
-        especialidadesList: u.especialidades?.map((e) => e.especialidad) || [],
-      }));
+      const processedUsers = (users || [])
+        .filter((u) => u.id !== user.id)
+        .map((u) => ({
+          ...u,
+          lat: parseFloat(u.lat),
+          lng: parseFloat(u.lng),
+          distanceKm: u.distance_m ? (u.distance_m / 1000).toFixed(2) : "0.0",
+          especialidadesList:
+            u.especialidades?.map((e) => e.especialidad) || [],
+        }));
 
       setNearbyUsers(processedUsers);
     } catch (err) {
@@ -155,34 +123,9 @@ export default function NearbyPage() {
     }
   }, [geo.loaded, geo.coords, radius, especialidad, token]);
 
-  function SkeletonCard() {
-    return (
-      <Card className="user-card skeleton-card">
-        <div className="user-card-content">
-          <div className="skeleton-avatar" />
-          <div className="user-info skeleton-info">
-            <div className="skeleton-line long" />
-            <div className="skeleton-line short" />
-            <div className="skeleton-line medium" />
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   useEffect(() => {
     if (geo.loaded) loadNearbyUsers();
   }, [geo.loaded, radius, token]);
-
-  const points = useMemo(
-    () => [
-      [geo.coords.lat, geo.coords.lng],
-      ...nearbyUsers
-        .filter((u) => !isNaN(u.lat) && !isNaN(u.lng))
-        .map((u) => [u.lat, u.lng]),
-    ],
-    [geo.coords, nearbyUsers]
-  );
 
   const resultsText =
     nearbyUsers.length === 0
@@ -193,74 +136,16 @@ export default function NearbyPage() {
 
   return (
     <div className="nearby-page">
-      <div className="nearby-header">
-        <Link to="/profile" className="profile-link">
-          <Avatar
-            image={user?.foto_url}
-            label={user?.nombre?.[0] || "U"}
-            size="large"
-            shape="circle"
-            className="profile-avatar-header"
-          />
-        </Link>
-        <h2 className="page-title">Profesionales Cercanos</h2>
-        <Button
-          icon="pi pi-sign-out"
-          label="Salir"
-          outlined
-          severity="danger"
-          rounded
-          size="small"
-          onClick={() => {
-            confirmDialog({
-              message: "¿Estás seguro de que quieres cerrar sesión?",
-              header: "Cerrar sesión",
-              icon: "pi pi-exclamation-triangle",
-              acceptLabel: "Sí, salir",
-              rejectLabel: "Cancelar",
-              acceptClassName: "p-button-success",
-              rejectClassName: "p-button-danger p-button-text",
-              defaultFocus: "reject",
-              accept: () => logout(),
-              reject: () => {}, // opcional
-            });
-          }}
-        />
-      </div>
+      <NearbyHeader user={user} logout={logout} />
 
-      <Card className="filters-card">
-        <div className="filters-content">
-          <div className="radius-filter">
-            <span className="radius-label-with-icon">
-              <i className="pi pi-compass"></i>
-              Radio de búsqueda: {radius} km
-            </span>
-
-            <Slider
-              value={radius}
-              onChange={(e) => setRadius(e.value)}
-              min={1}
-              max={15}
-              className="custom-slider"
-            />
-          </div>
-
-          <InputText
-            placeholder="Filtrar por especialidad"
-            value={especialidad}
-            onChange={(e) => setEspecialidad(e.target.value)}
-            className="specialty-input"
-          />
-
-          <Button
-            label="Buscar"
-            onClick={loadNearbyUsers}
-            loading={loading}
-            className="p-button-rounded p-button-help search-btn"
-            icon="pi pi-search"
-          />
-        </div>
-      </Card>
+      <FiltersCard
+        radius={radius}
+        setRadius={setRadius}
+        especialidad={especialidad}
+        setEspecialidad={setEspecialidad}
+        loading={loading}
+        onSearch={loadNearbyUsers}
+      />
 
       <div className="results-count">
         <i className="pi pi-map-marker results-icon"></i>
@@ -270,138 +155,20 @@ export default function NearbyPage() {
       {!geo.loaded ? (
         <div className="loading-map">Obteniendo tu ubicación...</div>
       ) : (
-        <div className="map-wrapper">
-          <MapContainer
-            center={[geo.coords.lat, geo.coords.lng]}
-            zoom={14}
-            className="leaflet-map"
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; OpenStreetMap contributors"
-            />
-            <MapController points={points} />
-
-            <Circle
-              center={[geo.coords.lat, geo.coords.lng]}
-              radius={radius * 1000} // km → metros
-              pathOptions={{
-                fillColor: "#9f7aea",
-                fillOpacity: 0.25,
-                color: "#c084fc",
-                weight: 4,
-                opacity: 1,
-                dashArray: "10, 10",
-              }}
-            />
-
-            <LocateButton />
-
-            {/* Tu ubicación */}
-            <Marker position={[geo.coords.lat, geo.coords.lng]} icon={userIcon}>
-              <Popup>
-                <strong>Tú estás aquí</strong>
-              </Popup>
-            </Marker>
-
-            {/* Profesionales */}
-            {nearbyUsers.map((u) => (
-              <Marker
-                key={u.id}
-                position={[u.lat, u.lng]}
-                icon={providerIcon}
-                eventHandlers={{
-                  click: () => {
-                    setSelectedProfessional(u);
-                    setModalVisible(true);
-                  },
-                }}
-              >
-                <Popup>
-                  <div style={{ textAlign: "center", minWidth: 150 }}>
-                    <strong style={{ fontSize: "16px" }}>{u.nombre}</strong>
-                    <br />
-                    <small>{u.especialidadesList.join(", ")}</small>
-                    <br />
-                    <strong style={{ color: "#9f7aea" }}>
-                      {u.distanceKm} km
-                    </strong>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
+        <MapSection
+          geo={geo}
+          nearbyUsers={nearbyUsers}
+          radius={radius}
+          userIcon={userIcon}
+          providerIcon={providerIcon}
+        />
       )}
 
-      {/* Lista de profesionales */}
-      <div className="users-list">
-        {loading ? (
-          // Mostrar 6 skeletons mientras carga
-          <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </>
-        ) : nearbyUsers.length === 0 ? (
-          <p className="no-results">
-            No se encontraron profesionales con los filtros actuales.
-          </p>
-        ) : (
-          nearbyUsers.map((u) => (
-            <Card
-              key={u.id}
-              className="user-card"
-              onClick={() => {
-                setSelectedProfessional(u);
-                setModalVisible(true);
-              }}
-              style={{ cursor: "pointer" }}
-            >
-              <div className="user-card-content">
-                <Avatar
-                  image={u.foto_url || undefined}
-                  label={u.nombre?.[0]?.toUpperCase() || "?"}
-                  size="xlarge"
-                  shape="circle"
-                  className="user-avatar"
-                />
-                <div className="user-info">
-                  <h3>{u.nombre}</h3>
-                  <div
-                    style={{
-                      margin: "8px 0",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "6px",
-                    }}
-                  >
-                    {u.especialidadesList.map((esp, i) => (
-                      <Chip
-                        key={i}
-                        label={esp}
-                        className="p-chip-info"
-                        style={{ fontSize: "0.85rem" }}
-                      />
-                    ))}
-                  </div>
-                  <div className="distance">
-                    <i
-                      className="pi pi-map-marker"
-                      style={{ marginRight: 8 }}
-                    />
-                    <strong>{u.distanceKm} km</strong>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
-      {/* MODAL DEL PROFESIONAL*/}
+      <ProfessionalsList
+        loading={loading}
+        nearbyUsers={nearbyUsers}
+        onProfessionalClick={handleProfessionalClick}
+      />
       <ProfessionalModal
         professional={selectedProfessional}
         visible={modalVisible}
