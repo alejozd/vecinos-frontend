@@ -15,23 +15,6 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import "../../styles/ProfilePage.css";
 
-const especialidadesComunes = [
-  "Electricista",
-  "Plomero",
-  "Carpintero",
-  "Pintor",
-  "Jardinero",
-  "Albañil",
-  "Técnico de neveras",
-  "Técnico de lavadoras",
-  "Cerrajero",
-  "Gasista",
-  "Fumigador",
-  "Limpieza",
-  "Mudanzas",
-  "Otro",
-];
-
 export default function ProfilePage() {
   const { user, token, refreshUser } = useAuth();
   const toast = useRef(null);
@@ -41,6 +24,8 @@ export default function ProfilePage() {
   const [experiencia, setExperiencia] = useState(null);
   const [descEsp, setDescEsp] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
+  const [especialidadesComunes, setEspecialidadesComunes] = useState([]);
+  const [loadingEspecialidades, setLoadingEspecialidades] = useState(true);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -50,6 +35,44 @@ export default function ProfilePage() {
     descripcion: "",
     especialidades: [],
   });
+
+  // CARGAR ESPECIALIDADES DESDE EL BACKEND
+  useEffect(() => {
+    const cargarEspecialidades = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/especialidades`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setEspecialidadesComunes(data);
+        }
+      } catch (err) {
+        console.error("Error cargando especialidades:", err);
+        // Fallback: usar las comunes si falla
+        setEspecialidadesComunes([
+          "Electricista",
+          "Plomero",
+          "Carpintero",
+          "Pintor",
+          "Jardinero",
+          "Albañil",
+          "Técnico de neveras",
+          "Técnico de lavadoras",
+          "Cerrajero",
+          "Gasista",
+          "Fumigador",
+          "Limpieza",
+          "Mudanzas",
+          "Otro",
+        ]);
+      } finally {
+        setLoadingEspecialidades(false);
+      }
+    };
+
+    cargarEspecialidades();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -314,8 +337,13 @@ export default function ProfilePage() {
                   value: e,
                 }))}
                 onChange={(e) => setNuevaEspecialidad(e.value)}
-                placeholder="Selecciona o escribe..."
+                placeholder={
+                  loadingEspecialidades
+                    ? "Cargando..."
+                    : "Selecciona o escribe..."
+                }
                 editable
+                filter
               />
             </div>
             <div className="field">
